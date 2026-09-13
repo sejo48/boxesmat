@@ -29,143 +29,173 @@
             outline: none;
             transform: scale(1.05) translateY(-4px);
             border-color: #06b6d4 !important;
-            box-shadow: 0 0 30px rgba(6, 182, 212, 0.7);
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.7);
             background-color: rgba(6, 182, 212, 0.15);
             z-index: 20;
         }
         
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 5px;
+            height: 5px;
         }
         ::-webkit-scrollbar-track {
             background: rgba(15, 23, 42, 0.6);
-            border-radius: 4px;
+            border-radius: 3px;
         }
         ::-webkit-scrollbar-thumb {
             background: rgba(6, 182, 212, 0.4);
-            border-radius: 4px;
+            border-radius: 3px;
         }
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(6, 182, 212, 0.8);
         }
 
         @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(6, 182, 212, 0.4); }
-            50% { box-shadow: 0 0 40px rgba(6, 182, 212, 0.8); }
+            0%, 100% { box-shadow: 0 0 15px rgba(6, 182, 212, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(6, 182, 212, 0.8); }
         }
         .animate-glow {
             animation: pulse-glow 3s infinite;
         }
     </style>
 </head>
-<body class="w-screen h-screen flex flex-col p-6 lg:p-8 select-none">
+<body class="w-screen h-screen flex flex-col p-3 lg:p-4 select-none">
 
     <!-- Invitation Banner para boxplaytv.com -->
-    <div class="bg-gradient-to-r from-cyan-950 via-teal-950 to-slate-900 border border-cyan-500/40 px-4 py-2.5 rounded-2xl mb-4 flex items-center justify-between shrink-0 shadow-[0_0_20px_rgba(6,182,212,0.2)]">
-        <div class="flex items-center space-x-3">
-            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
-            <p class="text-xs sm:text-sm font-semibold text-cyan-200">
-                ✨ ¿Buscas más contenido, series y canales? Visita nuestra plataforma completa en <a href="https://boxplaytv.com" target="_blank" class="text-cyan-400 font-bold underline hover:text-cyan-300 transition-colors">boxplaytv.com</a>
+    <div class="bg-gradient-to-r from-cyan-950 via-teal-950 to-slate-900 border border-cyan-500/40 px-3 py-1.5 rounded-xl mb-2 flex items-center justify-between shrink-0 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+        <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+            <p class="text-[11px] font-semibold text-cyan-200">
+                ✨ ¿Buscas más contenido, series y canales? Visita nuestra plataforma en <a href="https://boxplaytv.com" target="_blank" class="text-cyan-400 font-bold underline hover:text-cyan-300 transition-colors">boxplaytv.com</a>
             </p>
         </div>
-        <a href="https://boxplaytv.com" target="_blank" class="hidden sm:inline-flex bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-3.5 py-1.5 rounded-xl text-xs transition-colors shadow-md">
+        <a href="https://boxplaytv.com" target="_blank" class="hidden sm:inline-flex bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-2.5 py-0.5 rounded-lg text-[10px] transition-colors shadow-md">
             Visitar boxplaytv.com
         </a>
     </div>
 
     <!-- Header de la Smart TV -->
-    <header class="flex items-center justify-between mb-6 pb-4 border-b border-slate-800/80 shrink-0">
-        <div class="flex items-center space-x-4">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-600 to-teal-500 flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.5)]">
-                <span class="orbitron font-black text-xl text-white">BOX</span>
+    <header class="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-800/80 shrink-0">
+        <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-600 to-teal-500 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.5)]">
+                <span class="orbitron font-black text-sm text-white">BOX</span>
             </div>
             <div>
-                <h1 class="orbitron font-black text-2xl tracking-wider text-cyan-400">BOXPLAY<span class="text-white">TV // ESTRENOS 2026</span></h1>
-                <p id="current-time" class="text-xs text-slate-400 font-semibold tracking-wide">Cargando estrenos desde GitHub...</p>
+                <h1 class="orbitron font-black text-base tracking-wider text-cyan-400">BOXPLAY<span class="text-white">TV // IPTV</span></h1>
+                <p id="current-time" class="text-[10px] text-slate-400 font-semibold tracking-wide">Cargando contenido...</p>
             </div>
         </div>
 
-        <div class="flex items-center space-x-3">
-            <span class="px-4 py-2 rounded-xl font-bold text-xs lg:text-sm bg-cyan-500/20 text-cyan-300 border border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.4)]">
-                Estrenos 2026
-            </span>
+        <!-- Selector de Categorías / Listas -->
+        <div class="flex items-center space-x-2" id="categories-bar">
+            <button onclick="switchCategory('movies2')" id="cat-movies2" class="px-2.5 py-1 rounded-lg font-bold text-[11px] bg-cyan-500/20 text-cyan-300 border border-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.4)] transition-all cursor-pointer">Estrenos 2026</button>
+            <button onclick="switchCategory('movies')" id="cat-movies" class="px-2.5 py-1 rounded-lg font-bold text-[11px] bg-slate-900 text-slate-400 border border-slate-800 transition-all cursor-pointer">Películas</button>
+            <button onclick="switchCategory('series')" id="cat-series" class="px-2.5 py-1 rounded-lg font-bold text-[11px] bg-slate-900 text-slate-400 border border-slate-800 transition-all cursor-pointer">Series</button>
         </div>
     </header>
 
     <!-- Contenedor Principal / Reproductor -->
     <main id="main-container" class="flex-1 flex flex-col overflow-hidden relative">
         
-        <!-- Vista de la Parrilla / Catálogo de Estrenos -->
+        <!-- Vista de la Parrilla / Catálogo con portadas compactas -->
         <div id="grid-view" class="flex-1 flex flex-col overflow-hidden">
-            <div class="flex items-center justify-between mb-4 px-2">
+            <div class="flex items-center justify-between mb-2 px-1">
                 <div class="flex items-center space-x-2">
-                    <span id="loading-indicator" class="inline-block w-3 h-3 rounded-full bg-cyan-500 animate-ping"></span>
-                    <h2 id="category-title" class="orbitron font-bold text-lg text-slate-200">Conectando con GitHub (Estrenos 2026)...</h2>
+                    <span id="loading-indicator" class="inline-block w-2 h-2 rounded-full bg-cyan-500 animate-ping"></span>
+                    <h2 id="category-title" class="orbitron font-bold text-xs sm:text-sm text-slate-200">Cargando catálogo IPTV...</h2>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <span class="text-xs bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-slate-400">
-                        Navegación Smart TV con <strong class="text-cyan-400">Flechas</strong> y <strong class="text-cyan-400">ENTER</strong>
+                <div class="flex items-center space-x-2">
+                    <span class="text-[10px] bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-lg text-slate-400">
+                        Navegación con <strong class="text-cyan-400">Flechas</strong> y <strong class="text-cyan-400">ENTER</strong>
                     </span>
                 </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto px-2 py-2 pr-4" id="grid-scroll-area">
-                <div id="items-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 pb-8"></div>
+            <!-- Grid optimizado con más columnas para portadas pequeñas y compactas -->
+            <div class="flex-1 overflow-y-auto px-1 py-1 pr-2" id="grid-scroll-area">
+                <div id="items-grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 pb-4"></div>
             </div>
         </div>
         
-        <!-- Vista del Reproductor de Vídeo -->
-        <div id="player-view" class="hidden flex-1 relative bg-black rounded-3xl overflow-hidden border border-cyan-500/40 shadow-2xl flex items-center justify-center">
+        <!-- Vista del Reproductor de Vídeo (Pantalla Completa Forzada) -->
+        <div id="player-view" class="hidden flex-1 relative bg-black rounded-xl overflow-hidden border border-cyan-500/40 shadow-2xl flex items-center justify-center">
             <div id="player-content" class="w-full h-full absolute inset-0"></div>
             
-            <div class="absolute top-6 left-6 right-6 flex items-center justify-between z-30 pointer-events-none">
-                <button onclick="closePlayer()" class="pointer-events-auto bg-black/80 hover:bg-cyan-600 text-white px-5 py-2.5 rounded-xl border border-cyan-500/40 font-bold text-sm shadow-xl transition-all cursor-pointer flex items-center space-x-2">
+            <div class="absolute top-3 left-3 right-3 flex items-center justify-between z-30 pointer-events-none">
+                <button onclick="closePlayer()" class="pointer-events-auto bg-black/80 hover:bg-cyan-600 text-white px-3 py-1.5 rounded-lg border border-cyan-500/40 font-bold text-[11px] shadow-xl transition-all cursor-pointer flex items-center space-x-1.5">
                     <span>← Volver al Menú (Esc / Atrás)</span>
                 </button>
-                <div id="playing-badge" class="bg-cyan-950/80 border border-cyan-500/50 backdrop-blur-md px-4 py-2 rounded-xl text-cyan-300 text-xs font-bold uppercase tracking-wider">
-                    Estreno 2026 • 4K HDR
+                <div id="playing-badge" class="bg-cyan-950/80 border border-cyan-500/50 backdrop-blur-md px-2.5 py-1 rounded-lg text-cyan-300 text-[10px] font-bold uppercase tracking-wider">
+                    Reproduciendo • 4K HDR
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Footer con Guía de Mando y Control Virtual -->
-    <footer class="mt-4 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400 shrink-0">
-        <div class="flex items-center space-x-6">
-            <div class="flex items-center space-x-2">
-                <span class="px-2 py-1 bg-slate-900 border border-slate-700 rounded text-cyan-400 font-mono font-bold">IZQ / DER / ARR / ABA</span>
-                <span>Navegar Parrilla</span>
+    <!-- Footer con Guía y Mando Virtual Inteligente (Se oculta al usar mouse) -->
+    <footer id="app-footer" class="mt-2 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400 shrink-0 transition-opacity duration-300">
+        <div class="hidden sm:flex items-center space-x-3">
+            <div class="flex items-center space-x-1">
+                <span class="px-1.5 py-0.5 bg-slate-900 border border-slate-700 rounded text-cyan-400 font-mono font-bold text-[9px]">IZQ / DER / ARR / ABA</span>
+                <span>Navegar</span>
             </div>
-            <div class="flex items-center space-x-2">
-                <span class="px-2 py-1 bg-slate-900 border border-slate-700 rounded text-cyan-400 font-mono font-bold">ENTER</span>
-                <span>Reproducir Estreno</span>
+            <div class="flex items-center space-x-1">
+                <span class="px-1.5 py-0.5 bg-slate-900 border border-slate-700 rounded text-cyan-400 font-mono font-bold text-[9px]">ENTER</span>
+                <span>Reproducir</span>
             </div>
-            <div class="flex items-center space-x-2">
-                <span class="px-2 py-1 bg-slate-900 border border-slate-700 rounded text-cyan-400 font-mono font-bold">ESC</span>
-                <span>Volver al Menú</span>
+            <div class="flex items-center space-x-1">
+                <span class="px-1.5 py-0.5 bg-slate-900 border border-slate-700 rounded text-cyan-400 font-mono font-bold text-[9px]">ESC</span>
+                <span>Volver</span>
             </div>
         </div>
 
-        <!-- Mando virtual interactivo con total soporte de clics directos -->
-        <div class="flex items-center space-x-2 bg-slate-900/90 border border-slate-800 p-1.5 rounded-2xl shadow-lg">
-            <button onclick="handleVirtualKey('ArrowLeft')" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-cyan-600 hover:text-white flex items-center justify-center transition-colors cursor-pointer font-bold">◀</button>
-            <div class="flex flex-col space-y-1">
-                <button onclick="handleVirtualKey('ArrowUp')" class="w-8 h-7 rounded-lg bg-slate-800 hover:bg-cyan-600 hover:text-white flex items-center justify-center transition-colors cursor-pointer font-bold text-xs">▲</button>
-                <button onclick="handleVirtualKey('ArrowDown')" class="w-8 h-7 rounded-lg bg-slate-800 hover:bg-cyan-600 hover:text-white flex items-center justify-center transition-colors cursor-pointer font-bold text-xs">▼</button>
+        <!-- Mando virtual compacto interactivo -->
+        <div class="flex items-center space-x-1.5 bg-slate-900/90 border border-slate-800 p-1 rounded-xl shadow-lg mx-auto sm:mx-0">
+            <button onclick="handleVirtualKey('ArrowLeft')" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-cyan-600 hover:text-white flex items-center justify-center transition-colors cursor-pointer font-bold text-[11px]">◀</button>
+            <div class="flex flex-col space-y-0.5">
+                <button onclick="handleVirtualKey('ArrowUp')" class="w-6 h-5 rounded-md bg-slate-800 hover:bg-cyan-600 hover:text-white flex items-center justify-center transition-colors cursor-pointer font-bold text-[9px]">▲</button>
+                <button onclick="handleVirtualKey('ArrowDown')" class="w-6 h-5 rounded-md bg-slate-800 hover:bg-cyan-600 hover:text-white flex items-center justify-center transition-colors cursor-pointer font-bold text-[9px]">▼</button>
             </div>
-            <button onclick="handleVirtualKey('ArrowRight')" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-cyan-600 hover:text-white flex items-center justify-center transition-colors cursor-pointer font-bold">▶</button>
-            <button onclick="handleVirtualKey('Enter')" class="px-3 h-8 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold transition-colors cursor-pointer text-xs shadow-md">OK</button>
+            <button onclick="handleVirtualKey('ArrowRight')" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-cyan-600 hover:text-white flex items-center justify-center transition-colors cursor-pointer font-bold text-[11px]">▶</button>
+            <button onclick="handleVirtualKey('Enter')" class="px-2 h-6 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold transition-colors cursor-pointer text-[10px] shadow-md">OK</button>
         </div>
     </footer>
 
     <script>
-        // URL directa exclusiva para Estrenos 2026 desde GitHub
-        const URL_MOVIES2 = 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/peliculas2.json';
+        // URLs oficiales de listas IPTV desde GitHub
+        const URLS = {
+            movies2: 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/peliculas2.json',
+            movies: 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/peliculas.json',
+            series: 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/playlist.json'
+        };
 
-        let MOVIES2_DATA = [];
+        let currentCat = 'movies2';
+        let APP_DATA = {
+            movies2: [],
+            movies: [],
+            series: []
+        };
         let selectedIndex = 0;
         let isPlaying = false;
+        let isMouseActive = false;
+
+        // Detección de uso de Mouse: oculta el mando virtual si el usuario mueve el ratón
+        window.addEventListener('mousemove', () => {
+            if (!isMouseActive) {
+                isMouseActive = true;
+                const footer = document.getElementById('app-footer');
+                if (footer) footer.style.opacity = '0.2';
+            }
+        });
+
+        // Mostrar mando virtual si usa teclado o toque
+        window.addEventListener('keydown', () => {
+            if (isMouseActive) {
+                isMouseActive = false;
+                const footer = document.getElementById('app-footer');
+                if (footer) footer.style.opacity = '1';
+            }
+        });
 
         // Reloj superior
         setInterval(() => {
@@ -174,14 +204,14 @@
             document.getElementById('current-time').textContent = `${timeStr} • 4K HDR • boxplaytv.com`;
         }, 1000);
 
-        // Conversor de enlaces para iframe / reproductor
+        // Conversor de enlaces para iframe / reproductor con pantalla completa forzada
         function convertUrl(url) {
             if (!url) return '';
             if (url.includes('youtube.com') && !url.includes('/embed/')) {
                 let videoId = '';
                 if (url.includes('watch?v=')) videoId = url.split('watch?v=')[1]?.split('&')[0];
                 else if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1]?.split('?')[0];
-                if (videoId) return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                if (videoId) return `https://www.youtube.com/embed/${videoId}?autoplay=1&fs=1&enablejsapi=1`;
             }
             if (url.includes('drive.google.com')) {
                 let fileId = '';
@@ -197,52 +227,103 @@
             return url;
         }
 
-        // Carga de Estrenos 2026 en vivo desde GitHub
-        async function fetchEstrenos2026() {
+        // Carga de todas las listas IPTV en vivo desde GitHub
+        async function fetchIPTVData() {
             try {
-                const response = await fetch(URL_MOVIES2);
-                const data = await response.json();
-                
-                const rawList = Array.isArray(data) ? data : (data.peliculas || data.content || []);
-                MOVIES2_DATA = rawList.map((m, idx) => ({
+                // Cargar Estrenos 2026
+                const res2 = await fetch(URLS.movies2);
+                const data2 = await res2.json();
+                const raw2 = Array.isArray(data2) ? data2 : (data2.peliculas || data2.content || []);
+                APP_DATA.movies2 = raw2.map((m, idx) => ({
                     id: `m2-${idx}`,
                     title: m.titulo || m.title || m.name || 'Estreno 2026',
-                    image: m.imagen || m.poster || m.image || 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=500&auto=format&fit=crop&q=80',
+                    image: m.imagen || m.poster || m.image || 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=300&auto=format&fit=crop&q=80',
                     url: convertUrl(m.urlDrive || m.url || m.urlOkRu || 'https://www.youtube.com/embed/dQw4w9WgXcQ'),
-                    desc: m.descripcion || m.sinopsis || m.plot || 'Estreno cinematográfico 2026 en alta definición.'
+                    desc: m.descripcion || m.sinopsis || m.plot || 'Estreno cinematográfico en alta definición.'
                 }));
 
+                // Cargar Películas Generales
+                const res1 = await fetch(URLS.movies);
+                const data1 = await res1.json();
+                const raw1 = Array.isArray(data1) ? data1 : (data1.peliculas || data1.content || []);
+                APP_DATA.movies = raw1.map((m, idx) => ({
+                    id: `m1-${idx}`,
+                    title: m.titulo || m.title || m.name || 'Película',
+                    image: m.imagen || m.poster || m.image || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=300&auto=format&fit=crop&q=80',
+                    url: convertUrl(m.urlDrive || m.url || m.urlOkRu || 'https://www.youtube.com/embed/dQw4w9WgXcQ'),
+                    desc: m.descripcion || m.sinopsis || m.plot || 'Película IPTV.'
+                }));
+
+                // Cargar Series
+                const res3 = await fetch(URLS.series);
+                const data3 = await res3.json();
+                const raw3 = Array.isArray(data3) ? data3 : (data3.series || []);
+                APP_DATA.series = raw3.map((s, idx) => {
+                    const firstEp = s.temporadas?.[0]?.episodios?.[0]?.urlDrive || s.temporadas?.[0]?.episodios?.[0]?.url || 'https://www.youtube.com/embed/dQw4w9WgXcQ';
+                    return {
+                        id: `s-${idx}`,
+                        title: s.tituloSerie || s.titulo || s.title || s.name || 'Serie',
+                        image: s.imagen || s.poster || s.image || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&auto=format&fit=crop&q=80',
+                        url: convertUrl(firstEp),
+                        desc: s.descripcion || s.sinopsis || 'Serie IPTV.'
+                    };
+                });
+
                 document.getElementById('loading-indicator').classList.remove('animate-ping');
-                document.getElementById('category-title').textContent = `Estrenos 2026 (${MOVIES2_DATA.length} títulos disponibles en boxplaytv.com)`;
+                updateCategoryUI();
                 renderGrid();
             } catch (err) {
-                console.error("Error al cargar Estrenos 2026:", err);
-                document.getElementById('category-title').textContent = "Estrenos 2026 (Modo Respaldo)";
-                MOVIES2_DATA = [
-                    { id: 'e1', title: 'Stranger Things 5', image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=500&auto=format&fit=crop&q=80', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1', desc: 'La batalla final por Hawkins ha comenzado.' },
-                    { id: 'e2', title: 'The Electric State', image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&auto=format&fit=crop&q=80', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1', desc: 'Viaje por el oeste americano con un robot misterioso.' },
-                    { id: 'e3', title: 'El Agente Nocturno S2', image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1', desc: 'Nueva conspiración de alto nivel en la seguridad nacional.' },
-                    { id: 'e4', title: 'One Piece Temporada 2', image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500&auto=format&fit=crop&q=80', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1', desc: 'Los Sombrero de Paja se adentran en la Grand Line.' }
+                console.error("Error al cargar IPTV:", err);
+                document.getElementById('category-title').textContent = "Catálogo IPTV (Modo Respaldo)";
+                APP_DATA.movies2 = [
+                    { id: 'e1', title: 'Stranger Things 5', image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=300&auto=format&fit=crop&q=80', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&fs=1', desc: 'La batalla final por Hawkins.' }
                 ];
+                updateCategoryUI();
                 renderGrid();
             }
         }
 
+        function switchCategory(cat) {
+            currentCat = cat;
+            selectedIndex = 0;
+            updateCategoryUI();
+            renderGrid();
+        }
+
+        function updateCategoryUI() {
+            ['movies2', 'movies', 'series'].forEach(c => {
+                const btn = document.getElementById(`cat-${c}`);
+                if (!btn) return;
+                if (c === currentCat) {
+                    btn.className = "px-2.5 py-1 rounded-lg font-bold text-[11px] bg-cyan-500/20 text-cyan-300 border border-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.4)] transition-all cursor-pointer";
+                } else {
+                    btn.className = "px-2.5 py-1 rounded-lg font-bold text-[11px] bg-slate-900 text-slate-400 border border-slate-800 transition-all cursor-pointer";
+                }
+            });
+
+            const titles = {
+                movies2: `Estrenos 2026 (${APP_DATA.movies2.length} títulos)`,
+                movies: `Películas IPTV (${APP_DATA.movies.length} títulos)`,
+                series: `Series IPTV (${APP_DATA.series.length} títulos)`
+            };
+            document.getElementById('category-title').textContent = titles[currentCat] || 'Catálogo';
+        }
+
         function renderGrid() {
             const grid = document.getElementById('items-grid');
+            const items = APP_DATA[currentCat] || [];
             
-            if (MOVIES2_DATA.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-16 text-slate-400">Cargando estrenos 2026...</div>`;
+            if (items.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 text-xs">Cargando contenido de la lista...</div>`;
                 return;
             }
 
-            grid.innerHTML = MOVIES2_DATA.map((item, idx) => `
-                <div tabindex="0" onclick="playItem('${item.id}')" onmouseenter="selectedIndex=${idx}; updateFocusStyles();" class="tv-focusable group relative aspect-[2/3] rounded-2xl overflow-hidden bg-slate-900 border-2 cursor-pointer ${selectedIndex === idx ? 'selected border-cyan-400 ring-2 ring-cyan-500/50' : 'border-slate-800'}">
-                    <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://placehold.co/300x450/0f172a/ffffff?text=${encodeURIComponent(item.title)}'" />
-                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex flex-col justify-end p-3.5">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-400 mb-1">ESTRENO 2026</span>
-                        <h3 class="font-extrabold text-sm text-white group-hover:text-cyan-300 transition-colors line-clamp-1">${item.title}</h3>
-                        <p class="text-[11px] text-slate-400 line-clamp-2 mt-1 leading-tight">${item.desc}</p>
+            // Tarjetas compactas y ligeras con texto sutil
+            grid.innerHTML = items.map((item, idx) => `
+                <div tabindex="0" onclick="playItem('${item.id}')" onmouseenter="selectedIndex=${idx}; updateFocusStyles();" class="tv-focusable group relative aspect-[2/3] rounded-md overflow-hidden bg-slate-900 border cursor-pointer ${selectedIndex === idx ? 'selected border-cyan-400 ring-1 ring-cyan-500/50' : 'border-slate-800'}">
+                    <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://placehold.co/150x225/0f172a/ffffff?text=${encodeURIComponent(item.title)}'" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent flex flex-col justify-end p-1">
+                        <h3 class="font-bold text-[9px] text-white group-hover:text-cyan-300 transition-colors line-clamp-1">${item.title}</h3>
                     </div>
                 </div>
             `).join('');
@@ -265,7 +346,8 @@
         }
 
         function playItem(itemId) {
-            const item = MOVIES2_DATA.find(i => i.id === itemId);
+            const items = APP_DATA[currentCat] || [];
+            const item = items.find(i => i.id === itemId);
             if (!item) return;
 
             isPlaying = true;
@@ -275,10 +357,14 @@
             const playerContent = document.getElementById('player-content');
             const badge = document.getElementById('playing-badge');
             
-            badge.textContent = "Reproduciendo • Estreno 2026 4K";
-            playerContent.innerHTML = `<iframe src="${item.url}" class="w-full h-full border-0 absolute inset-0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+            badge.textContent = `Reproduciendo • ${item.title}`;
             
-            // Forzar pantalla completa automática si el navegador del Smart TV lo permite
+            // Iframe con permisos completos de pantalla completa y reproducción automática
+            playerContent.innerHTML = `
+                <iframe src="${item.url}" class="w-full h-full border-0 absolute inset-0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+            `;
+            
+            // Forzar solicitud automática de pantalla completa
             const playerView = document.getElementById('player-view');
             if (playerView.requestFullscreen) {
                 playerView.requestFullscreen().catch(() => {});
@@ -301,7 +387,8 @@
         }
 
         function handleVirtualKey(key) {
-            const totalItems = MOVIES2_DATA.length;
+            const items = APP_DATA[currentCat] || [];
+            const totalItems = items.length;
             if (totalItems === 0) return;
 
             if (isPlaying) {
@@ -309,9 +396,11 @@
                 return;
             }
 
-            let numCols = 5;
-            if (window.innerWidth < 768) numCols = 2;
-            else if (window.innerWidth < 1024) numCols = 4;
+            // 10 columnas en grid compacto optimizado para TV
+            let numCols = 10;
+            if (window.innerWidth < 640) numCols = 4;
+            else if (window.innerWidth < 768) numCols = 6;
+            else if (window.innerWidth < 1024) numCols = 8;
 
             if (key === 'ArrowRight') {
                 selectedIndex = (selectedIndex + 1) % totalItems;
@@ -322,15 +411,25 @@
             } else if (key === 'ArrowDown') {
                 if (selectedIndex + numCols < totalItems) {
                     selectedIndex += numCols;
+                } else {
+                    const cats = ['movies2', 'movies', 'series'];
+                    const nextCat = cats[(cats.indexOf(currentCat) + 1) % cats.length];
+                    switchCategory(nextCat);
+                    return;
                 }
                 renderGrid();
             } else if (key === 'ArrowUp') {
                 if (selectedIndex - numCols >= 0) {
                     selectedIndex -= numCols;
+                } else {
+                    const cats = ['movies2', 'movies', 'series'];
+                    const prevCat = cats[(cats.indexOf(currentCat) - 1 + cats.length) % cats.length];
+                    switchCategory(prevCat);
+                    return;
                 }
                 renderGrid();
             } else if (key === 'Enter') {
-                if (MOVIES2_DATA[selectedIndex]) playItem(MOVIES2_DATA[selectedIndex].id);
+                if (items[selectedIndex]) playItem(items[selectedIndex].id);
             }
         }
 
@@ -343,12 +442,14 @@
                 return;
             }
 
-            let numCols = 5;
-            if (window.innerWidth < 768) numCols = 2;
-            else if (window.innerWidth < 1024) numCols = 4;
+            const items = APP_DATA[currentCat] || [];
+            let numCols = 10;
+            if (window.innerWidth < 640) numCols = 4;
+            else if (window.innerWidth < 768) numCols = 6;
+            else if (window.innerWidth < 1024) numCols = 8;
 
             if (e.key === 'ArrowRight') {
-                selectedIndex = Math.min(selectedIndex + 1, MOVIES2_DATA.length - 1);
+                selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
                 renderGrid();
                 e.preventDefault();
             } else if (e.key === 'ArrowLeft') {
@@ -356,25 +457,33 @@
                 renderGrid();
                 e.preventDefault();
             } else if (e.key === 'ArrowDown') {
-                if (selectedIndex + numCols < MOVIES2_DATA.length) {
+                if (selectedIndex + numCols < items.length) {
                     selectedIndex += numCols;
                     renderGrid();
+                } else {
+                    const cats = ['movies2', 'movies', 'series'];
+                    const nextCat = cats[(cats.indexOf(currentCat) + 1) % cats.length];
+                    switchCategory(nextCat);
                 }
                 e.preventDefault();
             } else if (e.key === 'ArrowUp') {
                 if (selectedIndex - numCols >= 0) {
                     selectedIndex -= numCols;
                     renderGrid();
+                } else {
+                    const cats = ['movies2', 'movies', 'series'];
+                    const prevCat = cats[(cats.indexOf(currentCat) - 1 + cats.length) % cats.length];
+                    switchCategory(prevCat);
                 }
                 e.preventDefault();
             } else if (e.key === 'Enter') {
-                if (MOVIES2_DATA[selectedIndex]) playItem(MOVIES2_DATA[selectedIndex].id);
+                if (items[selectedIndex]) playItem(items[selectedIndex].id);
                 e.preventDefault();
             }
         });
 
-        // Inicialización cargando Estrenos 2026 en vivo desde GitHub
-        fetchEstrenos2026();
+        // Inicialización
+        fetchIPTVData();
     </script>
 </body>
 </html>
