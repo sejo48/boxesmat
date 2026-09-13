@@ -276,11 +276,24 @@
             const badge = document.getElementById('playing-badge');
             
             badge.textContent = "Reproduciendo • Estreno 2026 4K";
-            playerContent.innerHTML = `<iframe src="${item.url}" class="w-full h-full border-0 absolute inset-0" allow="autoplay; fullscreen; encrypted-media"></iframe>`;
+            playerContent.innerHTML = `<iframe src="${item.url}" class="w-full h-full border-0 absolute inset-0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+            
+            // Forzar pantalla completa automática si el navegador del Smart TV lo permite
+            const playerView = document.getElementById('player-view');
+            if (playerView.requestFullscreen) {
+                playerView.requestFullscreen().catch(() => {});
+            } else if (playerView.webkitRequestFullscreen) {
+                playerView.webkitRequestFullscreen();
+            }
         }
 
         function closePlayer() {
             isPlaying = false;
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(() => {});
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
             document.getElementById('player-view').classList.add('hidden');
             document.getElementById('grid-view').classList.remove('hidden');
             document.getElementById('player-content').innerHTML = '';
