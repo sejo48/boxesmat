@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boxplaytv - Smart TV IPTV Edition (Estrenos 2026, Películas & Series)</title>
+    <title>Boxplaytv - Smart TV Edition</title>
     
-    <!-- Tailwind CSS & Google Fonts -->
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
         body {
@@ -17,7 +16,6 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             overflow: hidden;
             user-select: none;
-            pointer-events: none; /* Bloquea completamente el uso del mouse */
             margin: 0;
             padding: 0;
         }
@@ -58,12 +56,6 @@
                 ✨ ¿Buscas más contenido, series y canales? Visita nuestra plataforma en <span class="text-cyan-400 font-bold underline">boxplaytv.com</span>
             </p>
         </div>
-        <div class="flex items-center space-x-2">
-            <div id="ai-btn" tabindex="0" class="tv-focusable bg-indigo-600 text-white font-bold px-2.5 py-0.5 rounded-lg text-[10px] shadow-md flex items-center space-x-1 cursor-pointer" onclick="openAiAdvisor()">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                <span>Asistente IA</span>
-            </div>
-        </div>
     </div>
 
     <header class="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-800/80 shrink-0">
@@ -78,9 +70,9 @@
         </div>
 
         <div class="flex items-center space-x-2" id="categories-bar">
-            <div tabindex="0" id="cat-movies2" class="tv-focusable px-2.5 py-1 rounded-lg font-bold text-[11px] bg-cyan-500/20 text-cyan-300 border border-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.4)] transition-all" onclick="switchCategory('movies2')">Estrenos 2026</div>
-            <div tabindex="0" id="cat-movies" class="tv-focusable px-2.5 py-1 rounded-lg font-bold text-[11px] bg-slate-900 text-slate-400 border border-slate-800 transition-all" onclick="switchCategory('movies')">Películas</div>
-            <div tabindex="0" id="cat-series" class="tv-focusable px-2.5 py-1 rounded-lg font-bold text-[11px] bg-slate-900 text-slate-400 border border-slate-800 transition-all" onclick="switchCategory('series')">Series</div>
+            <div tabindex="0" id="cat-movies2" class="tv-focusable px-2.5 py-1 rounded-lg font-bold text-[11px] bg-slate-900 text-slate-400 border border-slate-800 cursor-pointer" onclick="switchCategory('movies2')">Estrenos 2026</div>
+            <div tabindex="0" id="cat-movies" class="tv-focusable px-2.5 py-1 rounded-lg font-bold text-[11px] bg-slate-900 text-slate-400 border border-slate-800 cursor-pointer" onclick="switchCategory('movies')">Películas</div>
+            <div tabindex="0" id="cat-series" class="tv-focusable px-2.5 py-1 rounded-lg font-bold text-[11px] bg-slate-900 text-slate-400 border border-slate-800 cursor-pointer" onclick="switchCategory('series')">Series</div>
         </div>
     </header>
 
@@ -93,11 +85,6 @@
                     <span id="loading-indicator" class="inline-block w-2 h-2 rounded-full bg-cyan-500 animate-ping"></span>
                     <h2 id="category-title" class="orbitron font-bold text-xs sm:text-sm text-slate-200">Cargando catálogo IPTV...</h2>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <span class="text-[10px] bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-lg text-slate-400">
-                        Navegación exclusiva con <strong class="text-cyan-400">Control Remoto (Flechas y ENTER)</strong>
-                    </span>
-                </div>
             </div>
 
             <div class="flex-1 overflow-y-auto px-1 py-1 pr-2" id="grid-scroll-area">
@@ -105,19 +92,13 @@
             </div>
         </div>
 
-        <!-- Series Detail View -->
+        <!-- Detail View for Series & Seasons -->
         <div id="detail-view" class="hidden flex-1 flex flex-col overflow-hidden bg-slate-950/90 rounded-xl border border-cyan-500/30 p-4 relative">
             <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
-                <div tabindex="0" id="back-detail-btn" class="tv-focusable bg-slate-900 text-white px-3 py-1 rounded-lg border border-slate-800 font-bold text-xs transition-all flex items-center space-x-1.5 cursor-pointer" onclick="closeDetail()">
+                <div tabindex="0" id="back-detail-btn" class="tv-focusable bg-slate-900 text-white px-3 py-1 rounded-lg border border-slate-800 font-bold text-xs flex items-center space-x-1.5 cursor-pointer" onclick="closeDetail()">
                     <span>← Volver al Catálogo</span>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <div tabindex="0" id="ai-synopsis-btn" class="tv-focusable bg-indigo-600/80 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center space-x-1 cursor-pointer" onclick="enhanceSynopsisWithAi()">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                        <span>Reseña IA</span>
-                    </div>
-                    <div class="text-cyan-400 font-bold text-xs uppercase tracking-wider">Detalle de Serie & Episodios</div>
-                </div>
+                <div class="text-cyan-400 font-bold text-xs uppercase tracking-wider">Detalle de Serie & Episodios</div>
             </div>
             
             <div class="flex flex-col md:flex-row gap-4 flex-1 overflow-hidden">
@@ -129,44 +110,30 @@
                     <p id="detail-desc" class="text-xs text-slate-300 mb-4 line-clamp-3 leading-relaxed"></p>
                     
                     <div id="seasons-tabs" class="flex items-center space-x-2 mb-3 overflow-x-auto pb-1"></div>
-                    
                     <div class="flex-1 overflow-y-auto pr-2 space-y-1.5" id="episodes-list"></div>
                 </div>
             </div>
         </div>
         
-        <!-- Video Player View -->
+        <!-- Video Player View with Red Simulation Button -->
         <div id="player-view" class="hidden flex-1 relative bg-black rounded-xl overflow-hidden border border-cyan-500/40 shadow-2xl flex items-center justify-center">
             <div id="player-content" class="w-full h-full absolute inset-0"></div>
             
+            <!-- Botón Rojo Simulador -->
+            <div class="absolute bottom-6 right-6 z-40" id="red-button-wrapper">
+                <div tabindex="0" id="red-play-simulator" class="tv-focusable bg-red-600 hover:bg-red-500 text-white font-black px-6 py-3 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.8)] border-2 border-white flex items-center space-x-2 cursor-pointer animate-bounce" onclick="simulatePlayerClick()">
+                    <i class="fa-solid fa-play text-lg"></i>
+                    <span class="text-xs uppercase tracking-widest font-mono">▶ PULSAR AQUÍ PARA INICIAR</span>
+                </div>
+            </div>
+
             <div class="absolute top-3 left-3 right-3 flex items-center justify-between z-30 pointer-events-none">
-                <div tabindex="0" id="back-player-btn" class="tv-focusable pointer-events-auto bg-black/80 text-white px-3 py-1.5 rounded-lg border border-cyan-500/40 font-bold text-[11px] shadow-xl transition-all flex items-center space-x-1.5 cursor-pointer" onclick="closePlayer()">
-                    <span>← Volver (Atrás / Esc)</span>
+                <div tabindex="0" id="back-player-btn" class="tv-focusable pointer-events-auto bg-black/80 text-white px-3 py-1.5 rounded-lg border border-cyan-500/40 font-bold text-[11px] shadow-xl flex items-center space-x-1.5 cursor-pointer" onclick="closePlayer()">
+                    <span>← Volver (Esc / Atrás)</span>
                 </div>
                 <div id="playing-badge" class="bg-cyan-950/80 border border-cyan-500/50 backdrop-blur-md px-2.5 py-1 rounded-lg text-cyan-300 text-[10px] font-bold uppercase tracking-wider">
                     Reproduciendo • 4K HDR
                 </div>
-            </div>
-        </div>
-
-        <!-- AI Assistant Modal -->
-        <div id="ai-modal" class="hidden absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-indigo-500/50 rounded-2xl p-5 max-w-md w-full shadow-2xl space-y-4">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <div class="flex items-center space-x-2 text-indigo-400 font-bold text-sm">
-                        <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
-                        <span>Asistente IA BoxplayTV</span>
-                    </div>
-                    <div tabindex="0" class="tv-focusable text-slate-400 hover:text-white cursor-pointer" onclick="closeAiModal()"><i class="fa-solid fa-xmark"></i></div>
-                </div>
-                <div class="space-y-3">
-                    <p class="text-xs text-slate-300">¿Qué tipo de película o serie te apetece ver hoy?</p>
-                    <input type="text" id="ai-prompt-input" placeholder="Ej. Película de acción de 2026..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-indigo-500 outline-none" />
-                    <div tabindex="0" id="ai-submit-btn" class="tv-focusable w-full bg-indigo-600 text-white font-bold py-2.5 rounded-xl text-xs transition-colors shadow-lg text-center cursor-pointer" onclick="askGeminiRecommendation()">
-                        Buscar Recomendación con IA
-                    </div>
-                </div>
-                <div id="ai-response-area" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 max-h-48 overflow-y-auto leading-relaxed"></div>
             </div>
         </div>
     </main>
@@ -178,11 +145,11 @@
                 <span>Navegar</span>
             </div>
             <div class="flex items-center space-x-1">
-                <span class="px-1.5 py-0.5 bg-slate-900 border border-slate-700 rounded text-cyan-400 font-mono font-bold text-[9px]">ENTER</span>
-                <span>Seleccionar / Reproducir</span>
+                <span class="px-1.5 py-0.5 bg-slate-900 border border-slate-700 rounded text-cyan-400 font-mono font-bold text-[9px]">ENTER / ESPACIO</span>
+                <span>Seleccionar</span>
             </div>
             <div class="flex items-center space-x-1">
-                <span class="px-1.5 py-0.5 bg-slate-900 border border-slate-700 rounded text-cyan-400 font-mono font-bold text-[9px]">ESC / ATRÁS</span>
+                <span class="px-1.5 py-0.5 bg-slate-900 border border-slate-700 rounded text-cyan-400 font-mono font-bold text-[9px]">ESC / BACK</span>
                 <span>Volver</span>
             </div>
         </div>
@@ -300,18 +267,14 @@
                 });
 
                 document.getElementById('loading-indicator').classList.remove('animate-ping');
-                updateCategoryUI();
-                renderGrid();
-                focusCurrentItem();
+                switchCategory('movies2');
             } catch (err) {
                 console.error("Error al cargar IPTV:", err);
                 document.getElementById('category-title').textContent = "Catálogo IPTV (Modo Respaldo)";
                 APP_DATA.movies2 = [
                     { id: 'e1', type: 'movie', title: 'Stranger Things 5', image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=300&auto=format&fit=crop&q=80', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&fs=1', desc: 'La batalla final por Hawkins.' }
                 ];
-                updateCategoryUI();
-                renderGrid();
-                focusCurrentItem();
+                switchCategory('movies2');
             }
         }
 
@@ -327,10 +290,6 @@
             document.getElementById('detail-view').classList.add('hidden');
             document.getElementById('grid-view').classList.remove('hidden');
 
-            if (document.fullscreenElement) {
-                document.exitFullscreen().catch(() => {});
-            }
-
             updateCategoryUI();
             renderGrid();
             focusCurrentItem();
@@ -341,9 +300,9 @@
                 const btn = document.getElementById(`cat-${c}`);
                 if (!btn) return;
                 if (c === currentCat) {
-                    btn.className = "tv-focusable px-2.5 py-1 rounded-lg font-bold text-[11px] bg-cyan-500/20 text-cyan-300 border border-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.4)] transition-all";
+                    btn.className = "tv-focusable px-2.5 py-1 rounded-lg font-bold text-[11px] bg-cyan-500/20 text-cyan-300 border border-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.4)] cursor-pointer";
                 } else {
-                    btn.className = "tv-focusable px-2.5 py-1 rounded-lg font-bold text-[11px] bg-slate-900 text-slate-400 border border-slate-800 transition-all";
+                    btn.className = "tv-focusable px-2.5 py-1 rounded-lg font-bold text-[11px] bg-slate-900 text-slate-400 border border-slate-800 cursor-pointer";
                 }
             });
 
@@ -360,18 +319,25 @@
             const items = APP_DATA[currentCat] || [];
             
             if (items.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 text-xs">Cargando contenido de la lista...</div>`;
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 text-xs">Cargando contenido...</div>`;
                 return;
             }
 
             grid.innerHTML = items.map((item, idx) => `
-                <div tabindex="0" id="grid-item-${idx}" class="tv-focusable group relative aspect-[2/3] rounded-md overflow-hidden bg-slate-900 border ${selectedIndex === idx ? 'selected border-cyan-400 ring-1 ring-cyan-500/50' : 'border-slate-800'}" onclick="handleItemClick('${item.id}')">
+                <div tabindex="0" id="grid-item-${idx}" class="tv-focusable group relative aspect-[2/3] rounded-md overflow-hidden bg-slate-900 border cursor-pointer ${selectedIndex === idx ? 'selected border-cyan-400 ring-1 ring-cyan-500/50' : 'border-slate-800'}" data-id="${item.id}">
                     <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://placehold.co/150x225/0f172a/ffffff?text=${encodeURIComponent(item.title)}'" />
                     <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent flex flex-col justify-end p-1">
                         <h3 class="font-bold text-[9px] text-white group-hover:text-cyan-300 transition-colors line-clamp-1">${item.title}</h3>
                     </div>
                 </div>
             `).join('');
+
+            items.forEach((item, idx) => {
+                const el = document.getElementById(`grid-item-${idx}`);
+                if (el) {
+                    el.addEventListener('click', () => handleItemClick(item.id));
+                }
+            });
 
             updateFocusStyles();
         }
@@ -396,7 +362,11 @@
                 if (backBtn) backBtn.focus();
                 return;
             }
-            if (isPlaying) return;
+            if (isPlaying) {
+                const redBtn = document.getElementById('red-play-simulator');
+                if (redBtn) redBtn.focus();
+                return;
+            }
             const el = document.getElementById(`grid-item-${selectedIndex}`);
             if (el) el.focus();
         }
@@ -464,12 +434,12 @@
             const episodes = activeSeason?.episodes || [];
 
             if (episodes.length === 0) {
-                episodesList.innerHTML = `<div class="text-xs text-slate-500 p-2">No hay episodios en esta temporada.</div>`;
+                episodesList.innerHTML = `<div class="text-xs text-slate-500 p-2">No hay episodios.</div>`;
                 return;
             }
 
             episodesList.innerHTML = episodes.map((ep, eIdx) => `
-                <div tabindex="0" class="tv-focusable ep-item p-2.5 rounded-lg bg-slate-900/80 hover:bg-cyan-950/60 border border-slate-800 hover:border-cyan-500/50 cursor-pointer flex items-center justify-between transition-all group" onclick="playEpisode('${ep.url}', '${ep.title}')">
+                <div tabindex="0" class="tv-focusable ep-item p-2.5 rounded-lg bg-slate-900/80 hover:bg-cyan-950/60 border border-slate-800 hover:border-cyan-500/50 flex items-center justify-between transition-all group cursor-pointer" onclick="playEpisode('${ep.url}', '${ep.title}')">
                     <div class="flex items-center space-x-2.5">
                         <span class="w-6 h-6 rounded bg-slate-800 flex items-center justify-center text-[10px] font-bold text-cyan-400">${eIdx + 1}</span>
                         <span class="text-xs font-bold text-slate-200">${ep.title}</span>
@@ -486,21 +456,19 @@
 
             const playerContent = document.getElementById('player-content');
             const badge = document.getElementById('playing-badge');
+            const redWrapper = document.getElementById('red-button-wrapper');
             
+            redWrapper.style.display = 'block';
             badge.textContent = `Reproduciendo • ${item.title}`;
             
             playerContent.innerHTML = `
-                <iframe src="${item.url}" class="w-full h-full border-0 absolute inset-0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                <iframe id="active-video-iframe" src="${item.url}" class="w-full h-full border-0 absolute inset-0 pointer-events-auto" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>
             `;
             
             setTimeout(() => {
-                document.getElementById('back-player-btn').focus();
+                const redBtn = document.getElementById('red-play-simulator');
+                if (redBtn) redBtn.focus();
             }, 200);
-
-            const playerView = document.getElementById('player-view');
-            if (playerView.requestFullscreen) {
-                playerView.requestFullscreen().catch(() => {});
-            }
         }
 
         function playEpisode(url, epTitle) {
@@ -510,28 +478,44 @@
 
             const playerContent = document.getElementById('player-content');
             const badge = document.getElementById('playing-badge');
+            const redWrapper = document.getElementById('red-button-wrapper');
             
+            redWrapper.style.display = 'block';
             badge.textContent = `Reproduciendo • ${epTitle}`;
             
             playerContent.innerHTML = `
-                <iframe src="${url}" class="w-full h-full border-0 absolute inset-0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                <iframe id="active-video-iframe" src="${url}" class="w-full h-full border-0 absolute inset-0 pointer-events-auto" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>
             `;
             
             setTimeout(() => {
-                document.getElementById('back-player-btn').focus();
+                const redBtn = document.getElementById('red-play-simulator');
+                if (redBtn) redBtn.focus();
             }, 200);
+        }
+
+        function simulatePlayerClick() {
+            const redWrapper = document.getElementById('red-button-wrapper');
+            if (redWrapper) {
+                redWrapper.style.display = 'none';
+            }
 
             const playerView = document.getElementById('player-view');
             if (playerView.requestFullscreen) {
                 playerView.requestFullscreen().catch(() => {});
+            } else if (playerView.webkitRequestFullscreen) {
+                playerView.webkitRequestFullscreen();
             }
         }
 
         function closePlayer() {
             isPlaying = false;
+            const redWrapper = document.getElementById('red-button-wrapper');
+            if (redWrapper) redWrapper.style.display = 'block';
+
             if (document.fullscreenElement) {
                 document.exitFullscreen().catch(() => {});
             }
+
             document.getElementById('player-view').classList.add('hidden');
             document.getElementById('player-content').innerHTML = '';
 
@@ -545,80 +529,13 @@
             }
         }
 
-        function openAiAdvisor() {
-            document.getElementById('ai-modal').classList.remove('hidden');
-            setTimeout(() => { document.getElementById('ai-prompt-input').focus(); }, 100);
-        }
-
-        function closeAiModal() {
-            document.getElementById('ai-modal').classList.add('hidden');
-            document.getElementById('ai-response-area').classList.add('hidden');
-            document.getElementById('ai-prompt-input').value = '';
-            focusCurrentItem();
-        }
-
-        async function askGeminiRecommendation() {
-            const promptText = document.getElementById('ai-prompt-input').value.trim();
-            if (!promptText) return;
-
-            const responseArea = document.getElementById('ai-response-area');
-            responseArea.classList.remove('hidden');
-            responseArea.textContent = 'Consultando al Asistente IA de BoxplayTV...';
-
-            const allTitles = [...APP_DATA.movies2, ...APP_DATA.movies, ...APP_DATA.series].map(item => item.title).join(', ');
-            const systemPrompt = "Act as an expert IPTV film curator for BoxplayTV. Recommend matching titles from the available catalog in Spanish.";
-            const userQuery = `Catálogo disponible: ${allTitles}. Petición: ${promptText}`;
-            const apiKey = "";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: userQuery }] }], systemInstruction: { parts: [{ text: systemPrompt }] } })
-                });
-                const result = await response.json();
-                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                responseArea.textContent = text || 'No se pudo obtener una respuesta.';
-            } catch (err) {
-                responseArea.textContent = 'Error de conexión con la IA.';
-            }
-        }
-
-        async function enhanceSynopsisWithAi() {
-            if (!currentSeries) return;
-            const descEl = document.getElementById('detail-desc');
-            const originalText = descEl.textContent;
-            descEl.textContent = '✨ Generando reseña avanzada con IA...';
-
-            const systemPrompt = "Rewrite and enhance the following series synopsis in Spanish to be more engaging in one concise paragraph.";
-            const userQuery = `Serie: ${currentSeries.title}. Sinopsis: ${originalText}`;
-            const apiKey = "";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: userQuery }] }], systemInstruction: { parts: [{ text: systemPrompt }] } })
-                });
-                const result = await response.json();
-                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (text) {
-                    descEl.textContent = text;
-                    currentSeries.desc = text;
-                } else {
-                    descEl.textContent = originalText;
-                }
-            } catch (err) {
-                descEl.textContent = originalText;
-            }
-        }
-
         window.addEventListener('keydown', (e) => {
             if (isPlaying) {
-                if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'x' || e.key === 'Enter') {
+                if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'x' || e.key === 'X') {
                     closePlayer();
+                    e.preventDefault();
+                } else if (e.key === 'Enter' || e.key === ' ') {
+                    simulatePlayerClick();
                     e.preventDefault();
                 }
                 return;
@@ -627,6 +544,12 @@
             if (isDetailOpen) {
                 if (e.key === 'Escape' || e.key === 'Backspace') {
                     closeDetail();
+                    e.preventDefault();
+                } else if (e.key === 'Enter' || e.key === ' ') {
+                    const activeEl = document.activeElement;
+                    if (activeEl && typeof activeEl.click === 'function') {
+                        activeEl.click();
+                    }
                     e.preventDefault();
                 }
                 return;
@@ -670,7 +593,7 @@
                     switchCategory(prevCat);
                 }
                 e.preventDefault();
-            } else if (e.key === 'Enter') {
+            } else if (e.key === 'Enter' || e.key === ' ') {
                 if (items[selectedIndex]) handleItemClick(items[selectedIndex].id);
                 e.preventDefault();
             }
