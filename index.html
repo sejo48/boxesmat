@@ -22,15 +22,25 @@
         .orbitron { font-family: 'Orbitron', sans-serif; }
         
         .tv-focusable {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
         }
         .tv-focusable:focus, .tv-focusable.selected {
-            outline: none;
-            transform: scale(1.05) translateY(-4px);
+            outline: 3px solid #22d3ee !important;
+            outline-offset: 3px;
+            transform: scale(1.06);
             border-color: #06b6d4 !important;
-            box-shadow: 0 0 25px rgba(6, 182, 212, 0.7);
-            background-color: rgba(6, 182, 212, 0.15);
-            z-index: 20;
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.85);
+            background-color: rgba(6, 182, 212, 0.18);
+            z-index: 50;
+        }
+        html, body {
+            overscroll-behavior: none;
+        }
+        button, [tabindex] {
+            -webkit-user-select: none;
+            user-select: none;
         }
         
         ::-webkit-scrollbar {
@@ -172,6 +182,104 @@
         let isDetailOpen = false;
         let currentSeries = null;
         let activeSeasonIndex = 0;
+        let focusZone = 'grid';
+        let lastFocusedId = null;
+
+        // Códigos habituales de mandos Smart TV:
+        // Samsung Back=10009, Backspace=8, Escape=27, Android/TV Back=461.
+        const TV_KEYS = {
+            LEFT: ['ArrowLeft', 'Left', '37'],
+            RIGHT: ['ArrowRight', 'Right', '39'],
+            UP: ['ArrowUp', 'Up', '38'],
+            DOWN: ['ArrowDown', 'Down', '40'],
+            OK: ['Enter', 'NumpadEnter', ' ', 'Spacebar', '13'],
+            BACK: ['Escape', 'Esc', 'Backspace', 'BrowserBack', 'GoBack', '461', '10009', '8', '27']
+        };
+
+        function keyIs(e, list) {
+            return list.includes(e.key) || list.includes(String(e.keyCode)) || list.includes(String(e.which));
+        }
+
+        function focusElement(el) {
+            if (!el) return false;
+            try {
+                el.focus({ preventScroll: true });
+            } catch (_) {
+                el.focus();
+            }
+            lastFocusedId = el.id || null;
+            el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            return true;
+        }
+
+        function getFocusable(selector) {
+            return [...document.querySelectorAll(selector)].filter(el => {
+                const s = getComputedStyle(el);
+                return s.display !== 'none' && s.visibility !== 'hidden' && el.offsetParent !== null;
+            });
+        }
+
+        // Navegación espacial por posición. Funciona aunque el TV tenga otra cantidad
+        // de columnas que la prevista por CSS.
+        function moveSpatially(direction, selector) {
+            const current = document.activeElement;
+            const candidates = getFocusable(selector);
+            if (!current || !candidates.length) return false;
+
+            const r = current.getBoundingClientRect();
+            const cx = r.left + r.width / 2;
+            const cy = r.top + r.height / 2;
+
+            let best = null;
+            let bestScore = Infinity;
+
+            for (const el of candidates) {
+                if (el === current) continue;
+                const q = el.getBoundingClientRect();
+                const x = q.left + q.width / 2;
+                const y = q.top + q.height / 2;
+                const dx = x - cx;
+                const dy = y - cy;
+
+                let primary, secondary;
+                if (direction === 'right') {
+                    if (dx <= 4) continue;
+                    primary = dx; secondary = Math.abs(dy);
+                } else if (direction === 'left') {
+                    if (dx >= -4) continue;
+                    primary = -dx; secondary = Math.abs(dy);
+                } else if (direction === 'down') {
+                    if (dy <= 4) continue;
+                    primary = dy; secondary = Math.abs(dx);
+                } else {
+                    if (dy >= -4) continue;
+                    primary = -dy; secondary = Math.abs(dx);
+                }
+
+                const score = primary * 1.0 + secondary * 1.8;
+                if (score < bestScore) {
+                    bestScore = score;
+                    best = el;
+                }
+            }
+            return focusElement(best);
+        }
+
+        function preventTVDefault(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function focusCategory(index) {
+            const cats = ['movies2', 'movies', 'series'];
+            const i = Math.max(0, Math.min(index, cats.length - 1));
+            focusZone = 'categories';
+            focusElement(document.getElementById('cat-' + cats[i]));
+        }
+
+        function currentCategoryIndex() {
+            return ['movies2', 'movies', 'series'].indexOf(currentCat);
+        }
 
         setInterval(() => {
             const now = new Date();
@@ -292,7 +400,7 @@
 
             updateCategoryUI();
             renderGrid();
-            focusCurrentItem();
+            setTimeout(() => focusCurrentItem(), 30);
         }
 
         function updateCategoryUI() {
@@ -336,6 +444,7 @@
                 const el = document.getElementById(`grid-item-${idx}`);
                 if (el) {
                     el.addEventListener('click', () => handleItemClick(item.id));
+                    el.addEventListener('dblclick', () => handleItemClick(item.id));
                 }
             });
 
@@ -357,18 +466,22 @@
         }
 
         function focusCurrentItem() {
-            if (isDetailOpen) {
-                const backBtn = document.getElementById('back-detail-btn');
-                if (backBtn) backBtn.focus();
-                return;
-            }
             if (isPlaying) {
-                const redBtn = document.getElementById('red-play-simulator');
-                if (redBtn) redBtn.focus();
+                focusZone = 'player';
+                focusElement(document.getElementById('red-play-simulator'));
                 return;
             }
+            if (isDetailOpen) {
+                focusZone = 'episodes';
+                const target = document.querySelector('.ep-item') ||
+                               document.querySelector('.season-item') ||
+                               document.getElementById('back-detail-btn');
+                focusElement(target);
+                return;
+            }
+            focusZone = 'grid';
             const el = document.getElementById(`grid-item-${selectedIndex}`);
-            if (el) el.focus();
+            if (el) focusElement(el);
         }
 
         function handleItemClick(itemId) {
@@ -415,19 +528,29 @@
         function renderSeasonsAndEpisodes() {
             if (!currentSeries) return;
             const seasons = currentSeries.seasons || [];
-
             const seasonsTabs = document.getElementById('seasons-tabs');
+
             if (seasons.length === 0) {
                 seasonsTabs.innerHTML = `<span class="text-xs text-slate-400">No hay temporadas registradas.</span>`;
                 document.getElementById('episodes-list').innerHTML = '';
+                focusElement(document.getElementById('back-detail-btn'));
                 return;
             }
 
             seasonsTabs.innerHTML = seasons.map((season, sIdx) => `
-                <div tabindex="0" class="tv-focusable px-3 py-1 rounded-lg text-xs font-bold transition-all border cursor-pointer ${activeSeasonIndex === sIdx ? 'bg-cyan-500 text-white border-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.4)]' : 'bg-slate-900 text-slate-400 border-slate-800'}" onclick="activeSeasonIndex=${sIdx}; renderSeasonsAndEpisodes();">
+                <div tabindex="0" data-season-index="${sIdx}"
+                     class="tv-focusable season-item px-3 py-1 rounded-lg text-xs font-bold transition-all border cursor-pointer ${activeSeasonIndex === sIdx ? 'bg-cyan-500 text-white border-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.4)]' : 'bg-slate-900 text-slate-400 border-slate-800'}">
                     Temporada ${season.seasonNumber || (sIdx + 1)}
                 </div>
             `).join('');
+
+            seasonsTabs.querySelectorAll('.season-item').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    activeSeasonIndex = Number(tab.dataset.seasonIndex);
+                    renderSeasonsAndEpisodes();
+                    setTimeout(() => focusElement(document.querySelector('.ep-item') || tab), 50);
+                });
+            });
 
             const episodesList = document.getElementById('episodes-list');
             const activeSeason = seasons[activeSeasonIndex] || seasons[0];
@@ -435,11 +558,12 @@
 
             if (episodes.length === 0) {
                 episodesList.innerHTML = `<div class="text-xs text-slate-500 p-2">No hay episodios.</div>`;
+                focusElement(document.querySelector('.season-item'));
                 return;
             }
 
             episodesList.innerHTML = episodes.map((ep, eIdx) => `
-                <div tabindex="0" class="tv-focusable ep-item p-2.5 rounded-lg bg-slate-900/80 hover:bg-cyan-950/60 border border-slate-800 hover:border-cyan-500/50 flex items-center justify-between transition-all group cursor-pointer" onclick="playEpisode('${ep.url}', '${ep.title}')">
+                <div tabindex="0" class="tv-focusable ep-item p-2.5 rounded-lg bg-slate-900/80 border border-slate-800 flex items-center justify-between transition-all group cursor-pointer">
                     <div class="flex items-center space-x-2.5">
                         <span class="w-6 h-6 rounded bg-slate-800 flex items-center justify-center text-[10px] font-bold text-cyan-400">${eIdx + 1}</span>
                         <span class="text-xs font-bold text-slate-200">${ep.title}</span>
@@ -447,6 +571,10 @@
                     <span class="text-[10px] bg-cyan-950/80 text-cyan-300 border border-cyan-800 px-2 py-0.5 rounded font-bold">Reproducir ▶</span>
                 </div>
             `).join('');
+
+            episodesList.querySelectorAll('.ep-item').forEach((el, eIdx) => {
+                el.addEventListener('click', () => playEpisode(episodes[eIdx].url, episodes[eIdx].title));
+            });
         }
 
         function playMovie(item) {
@@ -529,74 +657,161 @@
             }
         }
 
+        // Control central del mando Smart TV.
+        // Se usan key y keyCode porque distintos televisores/WebViews reportan
+        // nombres diferentes para las mismas teclas.
         window.addEventListener('keydown', (e) => {
+            const left  = keyIs(e, TV_KEYS.LEFT);
+            const right = keyIs(e, TV_KEYS.RIGHT);
+            const up    = keyIs(e, TV_KEYS.UP);
+            const down  = keyIs(e, TV_KEYS.DOWN);
+            const ok    = keyIs(e, TV_KEYS.OK);
+            const back  = keyIs(e, TV_KEYS.BACK);
+
+            if (!(left || right || up || down || ok || back)) return;
+
+            preventTVDefault(e);
+
+            // REPRODUCTOR
             if (isPlaying) {
-                if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'x' || e.key === 'X') {
+                if (back) {
                     closePlayer();
-                    e.preventDefault();
-                } else if (e.key === 'Enter' || e.key === ' ') {
+                    return;
+                }
+                if (ok) {
                     simulatePlayerClick();
-                    e.preventDefault();
+                    return;
                 }
+                // Las flechas no deben mover el foco por detrás del video.
                 return;
             }
 
+            // DETALLE DE SERIE
             if (isDetailOpen) {
-                if (e.key === 'Escape' || e.key === 'Backspace') {
+                if (back) {
                     closeDetail();
-                    e.preventDefault();
-                } else if (e.key === 'Enter' || e.key === ' ') {
-                    const activeEl = document.activeElement;
-                    if (activeEl && typeof activeEl.click === 'function') {
-                        activeEl.click();
+                    return;
+                }
+
+                const current = document.activeElement;
+
+                if (ok) {
+                    if (current && typeof current.click === 'function') current.click();
+                    return;
+                }
+
+                if (up || down || left || right) {
+                    const selector = '#detail-view .tv-focusable';
+                    const moved = moveSpatially(
+                        left ? 'left' : right ? 'right' : up ? 'up' : 'down',
+                        selector
+                    );
+
+                    // Desde el primer episodio, UP lleva a temporadas.
+                    if (!moved && up) {
+                        const season = document.querySelector('.season-item');
+                        if (season) focusElement(season);
                     }
-                    e.preventDefault();
+
+                    // Desde temporadas, LEFT/UP puede llevar a Volver.
+                    if (!moved && (left || up)) {
+                        focusElement(document.getElementById('back-detail-btn'));
+                    }
                 }
                 return;
             }
 
-            const items = APP_DATA[currentCat] || [];
-            let numCols = 10;
-            if (window.innerWidth < 640) numCols = 4;
-            else if (window.innerWidth < 768) numCols = 6;
-            else if (window.innerWidth < 1024) numCols = 8;
+            // CATÁLOGO
+            const cats = ['movies2', 'movies', 'series'];
 
-            if (e.key === 'ArrowRight') {
-                selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
-                renderGrid();
-                focusCurrentItem();
-                e.preventDefault();
-            } else if (e.key === 'ArrowLeft') {
-                selectedIndex = Math.max(selectedIndex - 1, 0);
-                renderGrid();
-                focusCurrentItem();
-                e.preventDefault();
-            } else if (e.key === 'ArrowDown') {
-                if (selectedIndex + numCols < items.length) {
-                    selectedIndex += numCols;
+            if (focusZone === 'categories') {
+                const ci = currentCategoryIndex();
+
+                if (left) {
+                    focusCategory(Math.max(0, ci - 1));
+                    return;
+                }
+                if (right) {
+                    focusCategory(Math.min(cats.length - 1, ci + 1));
+                    return;
+                }
+                if (down) {
+                    focusZone = 'grid';
+                    selectedIndex = 0;
                     renderGrid();
                     focusCurrentItem();
-                } else {
-                    const cats = ['movies2', 'movies', 'series'];
-                    const nextCat = cats[(cats.indexOf(currentCat) + 1) % cats.length];
-                    switchCategory(nextCat);
+                    return;
                 }
-                e.preventDefault();
-            } else if (e.key === 'ArrowUp') {
-                if (selectedIndex - numCols >= 0) {
-                    selectedIndex -= numCols;
-                    renderGrid();
+                if (up) return;
+
+                if (ok) {
+                    const active = document.activeElement;
+                    if (active && typeof active.click === 'function') active.click();
+                    return;
+                }
+            }
+
+            if (focusZone === 'grid') {
+                const items = APP_DATA[currentCat] || [];
+
+                if (ok) {
+                    if (items[selectedIndex]) handleItemClick(items[selectedIndex].id);
+                    return;
+                }
+
+                if (left || right || up || down) {
+                    const direction = left ? 'left' : right ? 'right' : up ? 'up' : 'down';
+
+                    // El movimiento real se basa en las posiciones de las tarjetas,
+                    // no en asumir 4/6/8/10 columnas. Esto evita errores en Smart TV.
+                    const moved = moveSpatially(direction, '#items-grid > .tv-focusable');
+
+                    if (moved) {
+                        const active = document.activeElement;
+                        const all = [...document.querySelectorAll('#items-grid > .tv-focusable')];
+                        const idx = all.indexOf(active);
+                        if (idx >= 0) selectedIndex = idx;
+                        return;
+                    }
+
+                    // Arriba desde la primera fila: ir a categorías.
+                    if (up) {
+                        focusCategory(currentCategoryIndex());
+                        return;
+                    }
+
+                    // Abajo en la última fila: cambiar de categoría.
+                    if (down) {
+                        const next = (currentCategoryIndex() + 1) % cats.length;
+                        switchCategory(cats[next]);
+                        return;
+                    }
+
+                    // Borde izquierdo/derecho: mantener foco, sin saltos extraños.
                     focusCurrentItem();
-                } else {
-                    const cats = ['movies2', 'movies', 'series'];
-                    const prevCat = cats[(cats.indexOf(currentCat) - 1 + cats.length) % cats.length];
-                    switchCategory(prevCat);
                 }
-                e.preventDefault();
-            } else if (e.key === 'Enter' || e.key === ' ') {
-                if (items[selectedIndex]) handleItemClick(items[selectedIndex].id);
+                return;
+            }
+
+            // Fallback
+            focusCurrentItem();
+        }, true);
+
+        // Evita que el navegador intente desplazarse con las teclas del mando.
+        window.addEventListener('keyup', (e) => {
+            if (keyIs(e, TV_KEYS.LEFT) || keyIs(e, TV_KEYS.RIGHT) ||
+                keyIs(e, TV_KEYS.UP) || keyIs(e, TV_KEYS.DOWN) ||
+                keyIs(e, TV_KEYS.OK) || keyIs(e, TV_KEYS.BACK)) {
                 e.preventDefault();
             }
+        }, true);
+
+        // Al cargar, el foco queda listo para el mando.
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                focusZone = 'grid';
+                focusCurrentItem();
+            }, 500);
         });
 
         fetchIPTVData();
