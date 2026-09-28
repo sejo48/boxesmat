@@ -522,6 +522,7 @@ header {
     cursor: pointer;
     border: 1px solid rgba(255,255,255,0.06);
     transition: transform .15s ease, background .15s ease, border-color .15s ease;
+    white-space: nowrap;
 }
 
 .season-tab.active {
@@ -633,7 +634,7 @@ header {
 }
 
 /* =====================================================
-   REPRODUCTOR DIRECTO POR IFRAME (LÓGICA ORIGINAL)
+   REPRODUCTOR DIRECTO POR IFRAME
 ===================================================== */
 #playerScreen {
     background: black;
@@ -854,7 +855,7 @@ header {
     </div>
 
     <div class="video-area">
-        <!-- El iframe se inyecta dinámicamente con la lógica original exacta -->
+        <!-- El iframe se inyecta dinámicamente -->
     </div>
 </section>
 
@@ -897,37 +898,55 @@ const screens = {
 const navItems = [...document.querySelectorAll(".nav-item")];
 
 /* =====================================================
-   LÓGICA EXACTA DE CONVERSIÓN DE TU CÓDIGO ORIGINAL
+   ✅ CORREGIDO: CONVERSIÓN DE URLs
+   El bug era usar .split() sobre el resultado de otro .split()
+   (un array), lo que producía TypeError y rompía la reproducción.
 ===================================================== */
 function convertUrl(url) {
-    if (!url) return '';
-    if (url.includes('ok.ru/video/search') || url.includes('ok.ru/search')) return url;
-    if (url.includes('ok.ru/video/')) return url.replace('ok.ru/video/', 'ok.ru/videoembed/');
-    if (url.includes('youtube.com') && !url.includes('/embed/')) {
-        let videoId = '';
-        if (url.includes('watch?v=')) {
-            videoId = url.split('watch?v=')?.split('&')[0];
-        } else if (url.includes('youtu.be/')) {
-            videoId = url.split('youtu.be/')?.split('?')[0];
+    if (!url || typeof url !== "string") return '';
+    const cleanUrl = url.trim();
+
+    if (cleanUrl.includes('ok.ru/video/search') || cleanUrl.includes('ok.ru/search')) return cleanUrl;
+
+    if (cleanUrl.includes('ok.ru/video/')) {
+        return cleanUrl.replace('ok.ru/video/', 'ok.ru/videoembed/');
+    }
+
+    if (cleanUrl.includes('youtube.com') || cleanUrl.includes('youtu.be')) {
+        if (cleanUrl.includes('/embed/')) {
+            if (!cleanUrl.includes('enablejsapi=1')) {
+                const sep = cleanUrl.includes('?') ? '&' : '?';
+                return `${cleanUrl}${sep}enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
+            }
+            return cleanUrl;
         }
-        if (videoId) return `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
+        let videoId = '';
+        if (cleanUrl.includes('watch?v=')) {
+            const after = cleanUrl.split('watch?v=')[1];
+            if (after) videoId = after.split('&')[0];
+        } else if (cleanUrl.includes('youtu.be/')) {
+            const after = cleanUrl.split('youtu.be/')[1];
+            if (after) videoId = after.split('?')[0];
+        }
+        if (videoId) {
+            return `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
+        }
+        return cleanUrl;
     }
-    if (url.includes('/embed/') && !url.includes('enablejsapi=1')) {
-        const sep = url.includes('?') ? '&' : '?';
-        return `${url}${sep}enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
-    }
-    if (url.includes('drive.google.com')) {
+
+    if (cleanUrl.includes('drive.google.com')) {
         let fileId = '';
-        if (url.includes('/file/d/')) {
-            const parts = url.split('/file/d/');
-            if (parts) fileId = parts.split('/')[0];
-        } else if (url.includes('id=')) {
-            const parts = url.split('id=');
-            if (parts) fileId = parts.split('&')[0];
+        if (cleanUrl.includes('/file/d/')) {
+            const after = cleanUrl.split('/file/d/')[1];
+            if (after) fileId = after.split('/')[0];
+        } else if (cleanUrl.includes('id=')) {
+            const after = cleanUrl.split('id=')[1];
+            if (after) fileId = after.split('&')[0];
         }
         if (fileId) return `https://drive.google.com/file/d/${fileId}/preview`;
     }
-    return url;
+
+    return cleanUrl;
 }
 
 /* =====================================================
@@ -1324,11 +1343,11 @@ function openDetails(item) {
     document.getElementById("detailsPoster").src = item.image || "";
     document.getElementById("detailsTitle").textContent = item.title;
     document.getElementById("detailsMeta").innerHTML = `
-        <span>${item.year || "2026"}</span>
+        <span>${escapeHTML(item.year || "2026")}</span>
         <span>•</span>
-        <span>${item.genre || "Estreno"}</span>
+        <span>${escapeHTML(item.genre || "Estreno")}</span>
         <span>•</span>
-        <span>${item.duration || "HD"}</span>
+        <span>${escapeHTML(item.duration || "HD")}</span>
     `;
     document.getElementById("detailsDescription").textContent = item.description;
 
@@ -1348,12 +1367,19 @@ function openDetails(item) {
 
     detailsFocus.zone = "buttons";
     detailsFocus.buttonIdx = 0;
+    detailsFocus.seasonIdx = 0;
+    detailsFocus.episodeIdx = 0;
     focusZone = "content";
     focusCurrent();
 }
 
 function renderSeasonsAndEpisodes() {
     if (!selectedItem || !selectedItem.temporadas) return;
+
+    // ✅ CORREGIDO: asegurar índice válido
+    if (currentSeasonIndex < 0 || currentSeasonIndex >= selectedItem.temporadas.length) {
+        currentSeasonIndex = 0;
+    }
 
     const seasonsBar = document.getElementById("seasonsBar");
     seasonsBar.innerHTML = "";
@@ -1406,11 +1432,11 @@ function renderSeasonsAndEpisodes() {
 }
 
 /* =====================================================
-   REPRODUCCIÓN POR IFRAME (COMO EN TU APP ORIGINAL)
+   REPRODUCCIÓN POR IFRAME
 ===================================================== */
 function playVideoURL(url, title) {
     if (!url) {
-        alert("Enlace de reproducción no disponible.");
+        console.warn("Enlace de reproducción no disponible.");
         return;
     }
     
@@ -1430,6 +1456,7 @@ function playVideoURL(url, title) {
         iframe.style.background = "#000";
         iframe.allow = "autoplay; encrypted-media; fullscreen; picture-in-picture";
         iframe.allowFullscreen = true;
+        iframe.setAttribute("referrerpolicy", "no-referrer");
         playerArea.appendChild(iframe);
     }
 
@@ -1459,8 +1486,9 @@ function playSelectedItem() {
 function closePlayer() {
     const iframe = document.getElementById("externalPlayer");
     if (iframe) {
-        iframe.src = "about:blank";
-        iframe.style.display = "none";
+        // ✅ CORREGIDO: eliminar iframe para cortar cualquier descarga/autoplay
+        try { iframe.src = "about:blank"; } catch(e) {}
+        iframe.remove();
     }
 
     screens.player.classList.remove("active");
@@ -1470,7 +1498,7 @@ function closePlayer() {
         detailsFocus.zone = "buttons";
         focusCurrent();
     } else {
-        showSection(previousSection);
+        showSection(previousSection === "details" ? "inicio" : previousSection);
     }
 }
 
@@ -1485,7 +1513,10 @@ function goBack() {
 
     if (screens.details.classList.contains("active")) {
         screens.details.classList.remove("active");
-        showSection(previousSection);
+        const back = (previousSection && screens[previousSection] && previousSection !== "details" && previousSection !== "player")
+            ? previousSection
+            : "inicio";
+        showSection(back);
         return;
     }
 
@@ -1507,6 +1538,11 @@ function clearFocus() {
 }
 
 function showSection(section) {
+    // ✅ CORREGIDO: validar que la sección exista realmente
+    if (!screens[section] || section === "details" || section === "player") {
+        section = "inicio";
+    }
+
     if (screens.player.classList.contains("active")) {
         closePlayer();
     }
@@ -1522,6 +1558,8 @@ function showSection(section) {
     focusZone = "content";
     if (section === "inicio") {
         homeFocus.area = "row";
+        homeFocus.rowIndex = 0;
+        homeFocus.colIndex = 0;
     }
     focusCurrent();
 }
@@ -1558,7 +1596,7 @@ function focusCurrent() {
             if (tabs.length) {
                 detailsFocus.seasonIdx = Math.max(0, Math.min(detailsFocus.seasonIdx, tabs.length - 1));
                 tabs[detailsFocus.seasonIdx].classList.add("focused");
-                tabs[detailsFocus.seasonIdx].scrollIntoView({ behavior: "auto", block: "center" });
+                tabs[detailsFocus.seasonIdx].scrollIntoView({ behavior: "auto", block: "center", inline: "center" });
             }
             return;
         }
@@ -1598,7 +1636,10 @@ function focusCurrent() {
         if (card) {
             card.classList.add("focused");
             card.scrollIntoView({ behavior: "auto", block: "center", inline: "center" });
-            if (homeFocus.rowIndex === (getFavorites().length ? 1 : 0) && estrenos.length) {
+
+            // ✅ CORREGIDO: solo actualizar Hero si la fila activa son Estrenos y el índice existe
+            const activeRowId = activeRow.id;
+            if (activeRowId === "estrenos" && estrenos[homeFocus.colIndex]) {
                 updateHero(estrenos[homeFocus.colIndex]);
             }
         }
@@ -1737,6 +1778,8 @@ document.addEventListener("keydown", event => {
             }
             if (isEnterKey(event)) {
                 event.preventDefault();
+                // ✅ CORREGIDO: verificar selectedItem antes de actuar
+                if (!selectedItem) return;
                 if (detailsFocus.buttonIdx === 0) {
                     playSelectedItem();
                 } else {
@@ -1918,6 +1961,7 @@ document.addEventListener("keydown", event => {
             if (isEnterKey(event)) {
                 event.preventDefault();
                 const item = estrenos.length ? estrenos[0] : peliculas[0];
+                if (!item) return;
                 if (homeFocus.heroBtn === 0) {
                     selectedItem = item;
                     playSelectedItem();
@@ -2016,6 +2060,7 @@ document.addEventListener("keydown", event => {
         } else {
             focusZone = "nav";
             navIndex = navItems.findIndex(i => i.dataset.section === currentSection);
+            if (navIndex < 0) navIndex = 0;
             focusCurrent();
         }
         return;
