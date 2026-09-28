@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BOXPLAYTV</title>
 
-<!-- Soporte HLS (.m3u8) para Smart TV -->
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
 <style>
 * {
     box-sizing: border-box;
@@ -636,7 +633,7 @@ header {
 }
 
 /* =====================================================
-   REPRODUCTOR CON BOTÓN VOLVER PERMANENTE
+   REPRODUCTOR DIRECTO POR IFRAME (LÓGICA ORIGINAL)
 ===================================================== */
 #playerScreen {
     background: black;
@@ -644,7 +641,6 @@ header {
     z-index: 2500;
 }
 
-/* Barra superior del reproductor con botón Volver siempre accesible */
 .player-top-bar {
     position: absolute;
     top: 0;
@@ -655,7 +651,7 @@ header {
     display: flex;
     align-items: center;
     padding: 0 45px;
-    background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
+    background: linear-gradient(180deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
     opacity: 1;
     transition: opacity 0.3s ease;
 }
@@ -669,7 +665,7 @@ header {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    background: rgba(229, 9, 20, 0.9);
+    background: #e50914;
     border: 2px solid #ffffff;
     color: #ffffff;
     font-size: 17px;
@@ -704,55 +700,7 @@ header {
     width: 100vw;
     height: 100vh;
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-video {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
     background: black;
-}
-
-.player-controls {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 50px 60px 35px;
-    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.95) 100%);
-    opacity: 0;
-    transition: opacity 0.25s ease;
-    z-index: 2600;
-}
-
-.player-controls.visible {
-    opacity: 1;
-}
-
-.progress {
-    width: 100%;
-    height: 6px;
-    background: rgba(255,255,255,0.25);
-    border-radius: 3px;
-    margin-bottom: 18px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    width: 0%;
-    height: 100%;
-    background: #e50914;
-}
-
-.player-bottom {
-    display: flex;
-    align-items: center;
-    gap: 25px;
-    font-size: 16px;
-    font-weight: 700;
 }
 </style>
 </head>
@@ -898,7 +846,6 @@ video {
 
 <!-- PANTALLA 7: REPRODUCTOR -->
 <section id="playerScreen" class="screen">
-    <!-- Barra superior fija del reproductor con botón Volver siempre accesible -->
     <div id="playerTopBar" class="player-top-bar">
         <div id="playerBackBtn" class="btn-player-back" tabindex="0">
             ← Volver
@@ -907,17 +854,7 @@ video {
     </div>
 
     <div class="video-area">
-        <video id="videoPlayer" preload="metadata"></video>
-        <div id="playerControls" class="player-controls">
-            <div class="progress">
-                <div id="progressFill" class="progress-fill"></div>
-            </div>
-            <div class="player-bottom">
-                <div id="playerStatus">▶ REPRODUCIR</div>
-                <div id="currentTime">00:00:00</div>
-                <div id="duration">00:00:00</div>
-            </div>
-        </div>
+        <!-- El iframe se inyecta dinámicamente con la lógica original exacta -->
     </div>
 </section>
 
@@ -939,31 +876,10 @@ let currentSection = "inicio";
 let previousSection = "inicio";
 let selectedItem = null;
 let currentSeasonIndex = 0;
-let hlsInstance = null;
 
-/* Estado de foco en Inicio */
-let homeFocus = {
-    area: "row",
-    heroBtn: 0,
-    rowIndex: 0,
-    colIndex: 0
-};
-
-/* Estado de foco en Cuadrículas */
-let gridIndex = {
-    estrenos: 0,
-    peliculas: 0,
-    series: 0,
-    favoritos: 0
-};
-
-/* Estado de foco en Detalles */
-let detailsFocus = {
-    zone: "buttons", // "back", "buttons", "seasons", "episodes"
-    buttonIdx: 0,    // 0: Play, 1: Fav
-    seasonIdx: 0,
-    episodeIdx: 0
-};
+let homeFocus = { area: "row", heroBtn: 0, rowIndex: 0, colIndex: 0 };
+let gridIndex = { estrenos: 0, peliculas: 0, series: 0, favoritos: 0 };
+let detailsFocus = { zone: "buttons", buttonIdx: 0, seasonIdx: 0, episodeIdx: 0 };
 
 let navIndex = 0;
 let focusZone = "content";
@@ -981,7 +897,41 @@ const screens = {
 const navItems = [...document.querySelectorAll(".nav-item")];
 
 /* =====================================================
-   SISTEMA DE FAVORITOS (LOCALSTORAGE)
+   LÓGICA EXACTA DE CONVERSIÓN DE TU CÓDIGO ORIGINAL
+===================================================== */
+function convertUrl(url) {
+    if (!url) return '';
+    if (url.includes('ok.ru/video/search') || url.includes('ok.ru/search')) return url;
+    if (url.includes('ok.ru/video/')) return url.replace('ok.ru/video/', 'ok.ru/videoembed/');
+    if (url.includes('youtube.com') && !url.includes('/embed/')) {
+        let videoId = '';
+        if (url.includes('watch?v=')) {
+            videoId = url.split('watch?v=')?.split('&')[0];
+        } else if (url.includes('youtu.be/')) {
+            videoId = url.split('youtu.be/')?.split('?')[0];
+        }
+        if (videoId) return `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
+    }
+    if (url.includes('/embed/') && !url.includes('enablejsapi=1')) {
+        const sep = url.includes('?') ? '&' : '?';
+        return `${url}${sep}enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
+    }
+    if (url.includes('drive.google.com')) {
+        let fileId = '';
+        if (url.includes('/file/d/')) {
+            const parts = url.split('/file/d/');
+            if (parts) fileId = parts.split('/')[0];
+        } else if (url.includes('id=')) {
+            const parts = url.split('id=');
+            if (parts) fileId = parts.split('&')[0];
+        }
+        if (fileId) return `https://drive.google.com/file/d/${fileId}/preview`;
+    }
+    return url;
+}
+
+/* =====================================================
+   SISTEMA DE FAVORITOS
 ===================================================== */
 function getFavorites() {
     try {
@@ -1054,7 +1004,6 @@ function extractNumber(str, defaultNum = 999) {
 function normalizeItem(m) {
     if (!m) return null;
 
-    // Series
     if (m.tituloSerie !== undefined || m.temporadas !== undefined || m.episodios !== undefined) {
         const title = m.tituloSerie || m.titulo || m.title || "Serie Retro";
         const image = m.imagen || m.image || m.poster || "";
@@ -1086,7 +1035,6 @@ function normalizeItem(m) {
         };
     }
 
-    // Películas / Estrenos
     const title = firstValue(m, ["titulo", "title", "nombre", "name"]) || "Sin título";
     const image = firstValue(m, ["imagen", "image", "poster", "poster_path", "portada", "cover"]);
     const backdrop = firstValue(m, ["backdrop", "banner", "fondo", "background"]) || image;
@@ -1249,21 +1197,18 @@ function escapeHTML(v) {
 }
 
 function renderHomeCarousels() {
-    // Estrenos Netflix
     const cEstrenos = document.getElementById("carouselEstrenos");
     cEstrenos.innerHTML = "";
     estrenos.forEach(item => {
         cEstrenos.appendChild(createCard(item, () => openDetails(item)));
     });
 
-    // Películas
     const cPeliculas = document.getElementById("carouselPeliculas");
     cPeliculas.innerHTML = "";
     peliculas.slice(0, 30).forEach(item => {
         cPeliculas.appendChild(createCard(item, () => openDetails(item)));
     });
 
-    // Series Retro
     const cSeries = document.getElementById("carouselSeries");
     cSeries.innerHTML = "";
     series.slice(0, 30).forEach(item => {
@@ -1410,7 +1355,6 @@ function openDetails(item) {
 function renderSeasonsAndEpisodes() {
     if (!selectedItem || !selectedItem.temporadas) return;
 
-    // Selector de temporadas
     const seasonsBar = document.getElementById("seasonsBar");
     seasonsBar.innerHTML = "";
     selectedItem.temporadas.forEach((temp, idx) => {
@@ -1430,7 +1374,6 @@ function renderSeasonsAndEpisodes() {
 
     seasonsBar.style.display = selectedItem.temporadas.length > 1 ? "flex" : "none";
 
-    // Cuadrícula completa de episodios
     const currentSeason = selectedItem.temporadas[currentSeasonIndex];
     const episodes = currentSeason && Array.isArray(currentSeason.episodios) ? currentSeason.episodios : [];
     
@@ -1463,51 +1406,39 @@ function renderSeasonsAndEpisodes() {
 }
 
 /* =====================================================
-   REPRODUCCIÓN Y CONVERSIÓN DE URL
+   REPRODUCCIÓN POR IFRAME (COMO EN TU APP ORIGINAL)
 ===================================================== */
-function isDirectVideo(url) {
-    if (!url) return false;
-    const clean = url.split("?")[0].toLowerCase();
-    return clean.endsWith(".mp4") || clean.endsWith(".webm") || clean.endsWith(".m3u8") || clean.endsWith(".ogg") || clean.endsWith(".mov");
-}
-
-function convertEmbedURL(url) {
-    if (!url) return "";
-    if (url.includes("embed")) return url;
-
-    // OK.ru
-    const ok = url.match(/ok\.ru\/video\/(\d+)/i);
-    if (ok) return "https://ok.ru/videoembed/" + ok;
-
-    // YouTube Playlist
-    const ytList = url.match(/[?&]list=([^&#]+)/i);
-    if (ytList) return `https://www.youtube.com/embed/videoseries?list=${ytList}&autoplay=1`;
-
-    // YouTube Video
-    const ytWatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^?&#]+)/i);
-    if (ytWatch) return `https://www.youtube.com/embed/${ytWatch}?autoplay=1`;
-
-    // Google Drive
-    const drive = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
-    if (drive) return "https://drive.google.com/file/d/" + drive + "/preview";
-
-    return url;
-}
-
 function playVideoURL(url, title) {
     if (!url) {
         alert("Enlace de reproducción no disponible.");
         return;
     }
     
-    document.getElementById("playerStatus").textContent = "▶ " + (title || "REPRODUCIENDO");
+    const finalUrl = convertUrl(url);
     document.getElementById("playerVideoTitle").textContent = title || "";
 
-    if (isDirectVideo(url)) {
-        openHTML5Video(url);
-    } else {
-        openEmbeddedPlayer(url);
+    const playerArea = document.querySelector(".video-area");
+    let iframe = document.getElementById("externalPlayer");
+    if (!iframe) {
+        iframe = document.createElement("iframe");
+        iframe.id = "externalPlayer";
+        iframe.style.position = "absolute";
+        iframe.style.inset = "0";
+        iframe.style.width = "100%";
+        iframe.style.height = "100%";
+        iframe.style.border = "0";
+        iframe.style.background = "#000";
+        iframe.allow = "autoplay; encrypted-media; fullscreen; picture-in-picture";
+        iframe.allowFullscreen = true;
+        playerArea.appendChild(iframe);
     }
+
+    iframe.style.display = "block";
+    iframe.src = finalUrl;
+
+    screens.details.classList.remove("active");
+    screens.player.classList.add("active");
+    showPlayerControls();
 }
 
 function playSelectedItem() {
@@ -1525,80 +1456,15 @@ function playSelectedItem() {
     playVideoURL(selectedItem.video, selectedItem.title);
 }
 
-function openHTML5Video(url) {
-    const video = document.getElementById("videoPlayer");
-    screens.details.classList.remove("active");
-    screens.player.classList.add("active");
-
-    if (hlsInstance) {
-        hlsInstance.destroy();
-        hlsInstance = null;
-    }
-
-    if (url.includes(".m3u8")) {
-        if (video.canPlayType("application/vnd.apple.mpegurl")) {
-            video.src = url;
-            video.play().catch(() => {});
-        } else if (window.Hls && Hls.isSupported()) {
-            hlsInstance = new Hls();
-            hlsInstance.loadSource(url);
-            hlsInstance.attachMedia(video);
-            hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
-        } else {
-            video.src = url;
-            video.play().catch(() => {});
-        }
-    } else {
-        video.src = url;
-        video.load();
-        video.play().catch(() => {});
-    }
-
-    showPlayerControls();
-}
-
-function openEmbeddedPlayer(url) {
-    const area = document.querySelector(".video-area");
-    document.getElementById("videoPlayer").style.display = "none";
-
-    let iframe = document.getElementById("externalPlayer");
-    if (!iframe) {
-        iframe = document.createElement("iframe");
-        iframe.id = "externalPlayer";
-        iframe.style.position = "absolute";
-        iframe.style.inset = "0";
-        iframe.style.width = "100%";
-        iframe.style.height = "100%";
-        iframe.style.border = "0";
-        iframe.style.background = "#000";
-        iframe.allow = "autoplay; fullscreen; picture-in-picture";
-        area.appendChild(iframe);
-    }
-
-    iframe.src = convertEmbedURL(url);
-    screens.details.classList.remove("active");
-    screens.player.classList.add("active");
-    showPlayerControls();
-}
-
 function closePlayer() {
-    const video = document.getElementById("videoPlayer");
-    video.pause();
-    video.removeAttribute("src");
-    video.load();
-
-    if (hlsInstance) {
-        hlsInstance.destroy();
-        hlsInstance = null;
+    const iframe = document.getElementById("externalPlayer");
+    if (iframe) {
+        iframe.src = "about:blank";
+        iframe.style.display = "none";
     }
 
-    const iframe = document.getElementById("externalPlayer");
-    if (iframe) iframe.src = "about:blank";
-
-    video.style.display = "block";
     screens.player.classList.remove("active");
 
-    // Retorna a detalles si había un elemento abierto, o a la sección activa
     if (selectedItem) {
         screens.details.classList.add("active");
         detailsFocus.zone = "buttons";
@@ -1609,7 +1475,7 @@ function closePlayer() {
 }
 
 /* =====================================================
-   NAVEGACIÓN ATRÁS (RETORNO SEGURO)
+   NAVEGACIÓN ATRÁS
 ===================================================== */
 function goBack() {
     if (screens.player.classList.contains("active")) {
@@ -1739,7 +1605,7 @@ function focusCurrent() {
         return;
     }
 
-    // 4. Cuadrículas principales (Estrenos, Películas, Series, Favoritos)
+    // 4. Cuadrículas principales
     const gridId = currentSection + "Grid";
     const gridEl = document.getElementById(gridId);
     if (!gridEl) return;
@@ -1786,14 +1652,12 @@ document.addEventListener("keydown", event => {
 
     /* REPRODUCTOR */
     if (screens.player.classList.contains("active")) {
-        // Tecla Atrás cierra el reproductor inmediatamente
         if (isBackKey(event) || code === 413) {
             event.preventDefault();
             closePlayer();
             return;
         }
 
-        // Flecha arriba enfoca el botón Volver
         if (key === "ArrowUp") {
             event.preventDefault();
             document.getElementById("playerBackBtn").classList.add("focused");
@@ -1801,26 +1665,12 @@ document.addEventListener("keydown", event => {
             return;
         }
 
-        if (isEnterKey(event) || key === " " || code === 415 || code === 19 || code === 179) {
+        if (isEnterKey(event)) {
             event.preventDefault();
-            // Si el botón volver estaba enfocado, cerrar reproductor
-            if (document.getElementById("playerBackBtn").classList.contains("focused")) {
-                closePlayer();
-                return;
-            }
-            toggleVideo();
+            closePlayer();
             return;
         }
-        if (key === "ArrowLeft" || code === 412) {
-            event.preventDefault();
-            seek(-10);
-            return;
-        }
-        if (key === "ArrowRight" || code === 417) {
-            event.preventDefault();
-            seek(10);
-            return;
-        }
+
         if (key === "ArrowDown") {
             event.preventDefault();
             document.getElementById("playerBackBtn").classList.remove("focused");
@@ -1841,7 +1691,7 @@ document.addEventListener("keydown", event => {
             return;
         }
 
-        // Zona Botón Volver
+        // Botón Volver
         if (detailsFocus.zone === "back") {
             if (key === "ArrowDown") {
                 event.preventDefault();
@@ -1858,7 +1708,7 @@ document.addEventListener("keydown", event => {
             return;
         }
 
-        // Zona Botones Reproducir / Favoritos
+        // Botones Reproducir / Favoritos
         if (detailsFocus.zone === "buttons") {
             if (key === "ArrowLeft" || key === "ArrowRight") {
                 event.preventDefault();
@@ -1897,7 +1747,7 @@ document.addEventListener("keydown", event => {
             return;
         }
 
-        // Zona Selector de Temporadas
+        // Selector de Temporadas
         if (detailsFocus.zone === "seasons") {
             const tabs = document.querySelectorAll(".season-tab");
             if (key === "ArrowLeft") {
@@ -1938,7 +1788,7 @@ document.addEventListener("keydown", event => {
             return;
         }
 
-        // Zona Cuadrícula de Capítulos
+        // Cuadrícula de Capítulos
         if (detailsFocus.zone === "episodes") {
             const gridEl = document.getElementById("episodesGrid");
             const cards = gridEl ? gridEl.querySelectorAll(".episode-card") : [];
@@ -2191,68 +2041,22 @@ document.addEventListener("keydown", event => {
 ===================================================== */
 let playerTimer;
 function showPlayerControls() {
-    const controls = document.getElementById("playerControls");
     const topBar = document.getElementById("playerTopBar");
-
-    controls.classList.add("visible");
     topBar.classList.remove("hidden");
 
     clearTimeout(playerTimer);
     playerTimer = setTimeout(() => {
-        const video = document.getElementById("videoPlayer");
-        // Ocultar solo si el video está en reproducción y el botón no tiene foco
-        if (video && !video.paused && !document.getElementById("playerBackBtn").classList.contains("focused")) {
-            controls.classList.remove("visible");
+        if (!document.getElementById("playerBackBtn").classList.contains("focused")) {
             topBar.classList.add("hidden");
         }
     }, 4500);
 }
 
-function toggleVideo() {
-    const video = document.getElementById("videoPlayer");
-    if (video.style.display === "none") {
-        showPlayerControls();
-        return;
-    }
-    if (video.paused) {
-        video.play();
-        document.getElementById("playerStatus").textContent = "❚❚ PAUSAR";
-    } else {
-        video.pause();
-        document.getElementById("playerStatus").textContent = "▶ REPRODUCIR";
-    }
-    showPlayerControls();
-}
-
-function seek(sec) {
-    const video = document.getElementById("videoPlayer");
-    if (video.style.display === "none" || !Number.isFinite(video.duration)) return;
-    video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + sec));
-    showPlayerControls();
-}
-
-function formatTime(sec) {
-    if (!Number.isFinite(sec)) return "00:00:00";
-    const h = Math.floor(sec / 3600);
-    const m = Math.floor((sec % 3600) / 60);
-    const s = Math.floor(sec % 60);
-    return [h, m, s].map(n => String(n).padStart(2, "0")).join(":");
-}
-
-document.getElementById("videoPlayer").addEventListener("timeupdate", () => {
-    const v = document.getElementById("videoPlayer");
-    if (!Number.isFinite(v.duration)) return;
-    document.getElementById("progressFill").style.width = ((v.currentTime / v.duration) * 100) + "%";
-    document.getElementById("currentTime").textContent = formatTime(v.currentTime);
-    document.getElementById("duration").textContent = formatTime(v.duration);
-});
-
-// Mostrar barra y controles al mover el mouse en el reproductor
 document.getElementById("playerScreen").addEventListener("mousemove", () => {
     showPlayerControls();
 });
 
-/* Eventos de clic y táctiles */
+/* Eventos táctiles y de ratón */
 document.getElementById("playerBackBtn").addEventListener("click", () => closePlayer());
 
 document.querySelector(".logo").addEventListener("click", () => {
