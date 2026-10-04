@@ -16,71 +16,44 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 
     <style>
-        :root { --bg-primary: #020617; --accent-cyan: #06b6d4; }
+        :root { --bg-primary: #020617; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body {
-            background: var(--bg-primary);
-            color: #f8fafc;
+            background: var(--bg-primary); color: #f8fafc;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            overflow-x: hidden;
-            width: 100%;
-            height: 100%;
-            cursor: none !important;
-            -webkit-user-select: none;
-            user-select: none;
+            overflow-x: hidden; width: 100%; height: 100%;
+            cursor: none !important; -webkit-user-select: none; user-select: none;
         }
         #root { width: 100vw; height: 100vh; overflow: hidden; }
 
-        /* 🔥 FOCO VISUAL MUY POTENTE */
         .tv-focus {
-            outline: 4px solid #06b6d4 !important;
-            outline-offset: 4px;
+            outline: 4px solid #06b6d4 !important; outline-offset: 4px;
             border-radius: 12px;
             box-shadow: 0 0 25px rgba(6, 182, 212, 0.9), 0 0 50px rgba(6, 182, 212, 0.5) !important;
-            transform: scale(1.05);
-            z-index: 50;
+            transform: scale(1.05); z-index: 50;
             transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
             position: relative;
         }
-        .tv-focus::before {
-            content: '';
-            position: absolute;
-            inset: -6px;
-            border-radius: 16px;
-            background: radial-gradient(circle, rgba(6,182,212,0.18) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: -1;
-        }
-
         ::-webkit-scrollbar { width: 0; height: 0; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes scaleIn { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        .animate-scale-in { animation: scaleIn 0.25s ease-out forwards; }
+        .animate-spin { animation: spin 1s linear infinite; }
 
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(148, 163, 184, 0.15);
-        }
         .glass-header {
             background: rgba(2, 6, 23, 0.98);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(148, 163, 184, 0.15);
         }
-        .orbitron { font-family: 'Orbitron', sans-serif; }
-
-        .video-container-fix iframe {
-            width: 100% !important;
-            height: 100% !important;
-            border: none !important;
-            position: absolute !important;
-            inset: 0 !important;
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(148, 163, 184, 0.15);
         }
+        .orbitron { font-family: 'Orbitron', sans-serif; }
     </style>
 </head>
 <body>
@@ -88,7 +61,6 @@
         <div style="display:flex;height:100vh;align-items:center;justify-content:center;background:#020617;color:#94a3b8;flex-direction:column;font-family:sans-serif;">
             <div style="width:50px;height:50px;border:4px solid #06b6d4;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;"></div>
             <h2 style="font-weight:700;font-size:1rem;">Cargando BoxPlay TV...</h2>
-            <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
         </div>
     </div>
 
@@ -128,10 +100,7 @@
         const extractImageUrl = (obj) => {
             if (!obj || typeof obj !== 'object') return '';
             const fields = ['imagen','image','poster','img','logo','portada','cover','thumbnail','thumb','backdrop'];
-            for (const f of fields) {
-                const v = normalizeImageUrl(obj[f]);
-                if (v) return v;
-            }
+            for (const f of fields) { const v = normalizeImageUrl(obj[f]); if (v) return v; }
             return '';
         };
         const extractBackdropUrl = (obj) => {
@@ -152,15 +121,10 @@
             const [triedFallback, setTriedFallback] = useState(false);
             useEffect(() => {
                 const clean = normalizeImageUrl(src);
-                setCurrentSrc(clean || fallback);
-                setTriedFallback(false);
+                setCurrentSrc(clean || fallback); setTriedFallback(false);
             }, [src]);
             const handleError = () => {
-                if (!triedFallback) {
-                    failedImageUrls.add(currentSrc);
-                    setCurrentSrc(fallback);
-                    setTriedFallback(true);
-                }
+                if (!triedFallback) { failedImageUrls.add(currentSrc); setCurrentSrc(fallback); setTriedFallback(true); }
             };
             return <img src={currentSrc} alt={alt} className={className} onError={handleError} referrerPolicy="no-referrer" {...props} />;
         };
@@ -195,7 +159,7 @@
         };
 
         // ============================================================
-        // 🎯 NAVEGACIÓN POR D-PAD
+        // 🎯 NAVEGACIÓN D-PAD
         // ============================================================
         const useSpatialNavigation = () => {
             const [focusedKey, setFocusedKey] = useState(null);
@@ -228,25 +192,22 @@
                 const currentRect = currentEl.getBoundingClientRect();
                 const cx = currentRect.left + currentRect.width / 2;
                 const cy = currentRect.top + currentRect.height / 2;
-                let bestKey = null;
-                let bestDist = Infinity;
+                let bestKey = null, bestDist = Infinity;
                 elementsRef.current.forEach((el, key) => {
                     if (key === focusedKey) return;
                     const rect = el.getBoundingClientRect();
                     if (rect.width === 0 || rect.height === 0) return;
                     if (rect.bottom < 0 || rect.top > window.innerHeight) return;
                     if (rect.right < 0 || rect.left > window.innerWidth) return;
-                    const ex = rect.left + rect.width / 2;
-                    const ey = rect.top + rect.height / 2;
-                    const dx = ex - cx;
-                    const dy = ey - cy;
-                    let valid = false, primaryDist = 0, secondaryDist = 0;
-                    if (direction === 'right') { valid = dx > 5; primaryDist = dx; secondaryDist = Math.abs(dy); }
-                    else if (direction === 'left') { valid = dx < -5; primaryDist = -dx; secondaryDist = Math.abs(dy); }
-                    else if (direction === 'down') { valid = dy > 5; primaryDist = dy; secondaryDist = Math.abs(dx); }
-                    else if (direction === 'up') { valid = dy < -5; primaryDist = -dy; secondaryDist = Math.abs(dx); }
+                    const ex = rect.left + rect.width / 2, ey = rect.top + rect.height / 2;
+                    const dx = ex - cx, dy = ey - cy;
+                    let valid = false, p = 0, s = 0;
+                    if (direction === 'right') { valid = dx > 5; p = dx; s = Math.abs(dy); }
+                    else if (direction === 'left') { valid = dx < -5; p = -dx; s = Math.abs(dy); }
+                    else if (direction === 'down') { valid = dy > 5; p = dy; s = Math.abs(dx); }
+                    else if (direction === 'up') { valid = dy < -5; p = -dy; s = Math.abs(dx); }
                     if (!valid) return;
-                    const score = primaryDist + secondaryDist * 1.8;
+                    const score = p + s * 1.8;
                     if (score < bestDist) { bestDist = score; bestKey = key; }
                 });
                 if (bestKey) focusElement(bestKey);
@@ -263,8 +224,7 @@
                         e.preventDefault();
                         const el = elementsRef.current.get(focusedKey);
                         if (el) el.click();
-                    }
-                    else if (key === 'Escape' || key === 'Backspace' || code === 27 || code === 8 || code === 10009 || code === 461) {
+                    } else if (key === 'Escape' || key === 'Backspace' || code === 27 || code === 8 || code === 10009 || code === 461) {
                         e.preventDefault();
                         window.dispatchEvent(new CustomEvent('tv-back'));
                     }
@@ -282,18 +242,12 @@
             const nav = React.useContext(NavContext);
             const ref = useRef(null);
             const [isFocused, setIsFocused] = useState(false);
-
             useEffect(() => {
                 if (!nav || !focusKey) return;
                 nav.register(focusKey, ref.current);
                 return () => nav.register(focusKey, null);
             }, [nav, focusKey]);
-
-            useEffect(() => {
-                if (!nav) return;
-                setIsFocused(nav.focusedKey === focusKey);
-            }, [nav?.focusedKey, focusKey]);
-
+            useEffect(() => { if (nav) setIsFocused(nav.focusedKey === focusKey); }, [nav?.focusedKey, focusKey]);
             return (
                 <Component ref={ref} className={`${className} ${isFocused ? 'tv-focus' : ''}`} onClick={onEnter} {...props}>
                     {children}
@@ -307,7 +261,6 @@
         const Icon = ({ name, size = 20, className, fill = "none" }) => {
             const icons = {
                 search: <path d="M21 21l-4.35-4.35m0 0a7.5 7.5 0 111.414-1.414 7.5 7.5 0 01-1.414 1.414z" />,
-                x: <path d="M6 18L18 6M6 6l12 12" />,
                 play: <path d="M5 3l14 9-14 9V3z" />,
                 heart: <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78 z" />,
                 arrowLeft: <path d="M19 12H5m7 7l-7-7 7-7" />,
@@ -315,7 +268,6 @@
                 film: <path d="M19.82 2H4.18C2.97 2 2 2.97 2 4.18v15.64C2 21.03 2.97 22 4.18 22h15.64c1.21 0 2.18-.97 2.18-2.18V4.18C22 2.97 21.03 2 19.82 2zM7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 7h5M17 17h5" />,
                 star: <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>,
                 smile: <g><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></g>,
-                lock: <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a7 7 0 00-14 0v2" />,
             };
             return (
                 <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -344,23 +296,24 @@
         };
 
         // ============================================================
-        // 📋 MODAL DE DETALLE ENRIQUECIDO — ESTILO NETFLIX
+        // 📋 MODAL DE DETALLE — MODO POR DEFECTO: INFORMACIÓN
         // ============================================================
         const DetailModal = ({ item, onClose, onPlay, onPlayEpisode, isFavorite, onToggleFavorite, content, onSelectSimilar }) => {
             const title = item.titulo || item.title || item.name || '';
             const desc = item.descripcion || item.sinopsis || item.plot || 'Sin descripción disponible para este contenido.';
             const backdrop = extractBackdropUrl(item) || extractImageUrl(item) || generatePlaceholder(title, 'backdrop');
-            const poster = extractImageUrl(item) || generatePlaceholder(title, 'poster');
             const isSerie = item.type === 'series' || item.type === 'animados';
             const seasons = item.seasons || [];
             const [expandedSeason, setExpandedSeason] = useState(0);
-            const [detailTab, setDetailTab] = useState('similar');
 
-            // 🔥 Lista de similares (mismo género si existe)
+            // 🔥 MODO POR DEFECTO: INFORMACIÓN
+            const [detailTab, setDetailTab] = useState('info');
+
+            // 🔥 SIMILARES
             const similares = useMemo(() => {
-                const pool = [...content.movies2, ...content.movies, ...content.series, ...content.animados];
                 const currentId = item.id || item.title;
-                return pool
+                const pool = [...content.movies2, ...content.movies];
+                const filtered = pool
                     .filter(m => (m.id || m.title) !== currentId)
                     .filter(m => {
                         if (!item.generosTexto || !m.generosTexto) return true;
@@ -368,83 +321,60 @@
                         const mGenres = m.generosTexto.toLowerCase();
                         return currentGenres.some(g => g && mGenres.includes(g));
                     })
-                    .slice(0, 8);
+                    .slice(0, 12);
+                if (filtered.length >= 4) return filtered;
+                const extra = pool.filter(m => (m.id || m.title) !== currentId && !filtered.includes(m));
+                return [...filtered, ...extra].slice(0, 12);
             }, [item, content]);
 
-            const similaresFallback = useMemo(() => {
-                if (similares.length >= 4) return similares;
-                const pool = [...content.movies2, ...content.movies, ...content.series, ...content.animados];
-                const currentId = item.id || item.title;
-                return pool.filter(m => (m.id || m.title) !== currentId).slice(0, 8);
-            }, [similares, item, content]);
-
-            // 🔥 Últimos 6 estrenos
+            // 🔥 ÚLTIMOS 6 ESTRENOS 2026
             const ultimosEstrenos = useMemo(() => {
-                return (content.movies2 || []).slice(0, 6);
-            }, [content.movies2]);
+                const currentId = item.id || item.title;
+                return (content.movies2 || [])
+                    .filter(m => (m.id || m.title) !== currentId)
+                    .slice(0, 6);
+            }, [content.movies2, item]);
 
             return (
                 <div className="fixed inset-0 z-[100] bg-[#020617] animate-fade-in overflow-y-auto no-scrollbar">
-                    {/* ===== HERO BACKDROP ===== */}
+                    {/* HERO BACKDROP */}
                     <div className="relative w-full" style={{ height: '80vh', minHeight: '600px' }}>
                         <RobustImage
-                            src={backdrop}
-                            title={title}
-                            type="backdrop"
+                            src={backdrop} title={title} type="backdrop"
                             className="absolute inset-0 w-full h-full object-cover object-top"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/75 to-transparent"></div>
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#020617]/80 to-transparent"></div>
 
-                        {/* Botón volver */}
                         <div className="absolute top-8 left-10 z-30">
-                            <Focusable
-                                as="button"
-                                focusKey="detail-back"
-                                onEnter={onClose}
-                                className="px-6 py-3 rounded-xl bg-black/70 backdrop-blur-md text-white border-2 border-white/20 text-sm font-bold flex items-center gap-2"
-                            >
+                            <Focusable as="button" focusKey="detail-back" onEnter={onClose}
+                                className="px-6 py-3 rounded-xl bg-black/70 backdrop-blur-md text-white border-2 border-white/20 text-sm font-bold flex items-center gap-2">
                                 <Icon name="arrowLeft" size={18}/> Volver
                             </Focusable>
                         </div>
 
-                        {/* Info principal */}
                         <div className="absolute bottom-0 left-0 right-0 z-20 px-10 sm:px-20 pb-12">
                             <div className="max-w-4xl space-y-5">
                                 <h1 className="text-6xl sm:text-7xl font-black text-white leading-[0.95] tracking-tight uppercase drop-shadow-2xl">
                                     {title}
                                 </h1>
 
-                                {/* 🔥 META INFO: año, duración, clasificación, rating */}
                                 <div className="flex flex-wrap items-center gap-4 text-slate-200 text-base font-bold">
-                                    {item.year && <span className="text-cyan-400">{item.year}</span>}
                                     {item.clasificacion && <span>{item.clasificacion}</span>}
                                     {item.runtime && <span>{item.runtime}</span>}
+                                    {item.year && <span>{item.year}</span>}
                                     {item.rating && <span className="text-amber-300">⭐ {item.rating}</span>}
                                     {item.generosTexto && <span className="text-slate-400">{item.generosTexto}</span>}
                                 </div>
 
-                                {/* Sinopsis */}
-                                <p className="text-slate-100 text-lg leading-relaxed max-w-2xl line-clamp-3">
-                                    {desc}
-                                </p>
+                                <p className="text-slate-100 text-lg leading-relaxed max-w-2xl line-clamp-3">{desc}</p>
 
-                                {/* Botones de acción */}
                                 <div className="flex gap-4 pt-3">
-                                    <Focusable
-                                        as="button"
-                                        focusKey="detail-play"
-                                        onEnter={() => onPlay(item)}
-                                        className="bg-white text-black px-10 py-4 rounded-xl font-black text-lg flex items-center gap-3 shadow-2xl"
-                                    >
+                                    <Focusable as="button" focusKey="detail-play" onEnter={() => onPlay(item)}
+                                        className="bg-white text-black px-10 py-4 rounded-xl font-black text-lg flex items-center gap-3 shadow-2xl">
                                         <Icon fill="black" name="play" size={20}/> Ver ahora
                                     </Focusable>
-                                    <Focusable
-                                        as="button"
-                                        focusKey="detail-fav"
-                                        onEnter={() => onToggleFavorite(item)}
-                                        className="bg-black/60 backdrop-blur-md text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center gap-3 border-2 border-white/20"
-                                    >
+                                    <Focusable as="button" focusKey="detail-fav" onEnter={() => onToggleFavorite(item)}
+                                        className="bg-black/60 backdrop-blur-md text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center gap-3 border-2 border-white/20">
                                         <Icon name="heart" size={20} fill={isFavorite ? "#06b6d4" : "none"} className={isFavorite ? "text-cyan-400" : "text-white"}/>
                                         <span>{isFavorite ? 'En Mi lista' : 'Mi lista'}</span>
                                     </Focusable>
@@ -453,25 +383,17 @@
                         </div>
                     </div>
 
-                    {/* ===== SECCIÓN DE CONTENIDO ===== */}
+                    {/* CONTENIDO */}
                     <div className="max-w-[1700px] mx-auto px-10 sm:px-20 pt-10 pb-20 space-y-12">
 
-                        {/* 🔥 PESTAÑAS: Similar / Información */}
-                        <div className="flex gap-6 border-b border-slate-800/80">
-                            <Focusable
-                                as="button"
-                                focusKey="tab-similar"
-                                onEnter={() => setDetailTab('similar')}
-                                className={`pb-3 text-lg font-black ${detailTab === 'similar' ? 'text-white border-b-4 border-cyan-500' : 'text-slate-500'}`}
-                            >
+                        {/* PESTAÑAS */}
+                        <div className="flex gap-8 border-b border-slate-800/80">
+                            <Focusable as="button" focusKey="tab-similar" onEnter={() => setDetailTab('similar')}
+                                className={`pb-3 text-lg font-black ${detailTab === 'similar' ? 'text-white border-b-4 border-cyan-500' : 'text-slate-500'}`}>
                                 Quizá también te guste
                             </Focusable>
-                            <Focusable
-                                as="button"
-                                focusKey="tab-info"
-                                onEnter={() => setDetailTab('info')}
-                                className={`pb-3 text-lg font-black ${detailTab === 'info' ? 'text-white border-b-4 border-cyan-500' : 'text-slate-500'}`}
-                            >
+                            <Focusable as="button" focusKey="tab-info" onEnter={() => setDetailTab('info')}
+                                className={`pb-3 text-lg font-black ${detailTab === 'info' ? 'text-white border-b-4 border-cyan-500' : 'text-slate-500'}`}>
                                 Información
                             </Focusable>
                         </div>
@@ -480,13 +402,9 @@
                             <div>
                                 <h3 className="text-2xl font-black text-white mb-6">Títulos similares</h3>
                                 <div className="grid grid-cols-6 gap-5">
-                                    {similaresFallback.map((sim, sIdx) => (
-                                        <Focusable
-                                            key={sim.id || sIdx}
-                                            focusKey={`sim-${sim.id || sIdx}`}
-                                            onEnter={() => onSelectSimilar(sim)}
-                                            className="cursor-pointer"
-                                        >
+                                    {similares.map((sim, sIdx) => (
+                                        <Focusable key={sim.id || sIdx} focusKey={`sim-${sim.id || sIdx}`}
+                                            onEnter={() => onSelectSimilar(sim)} className="cursor-pointer">
                                             <div className="aspect-[2/3] rounded-lg overflow-hidden bg-black border-2 border-slate-800 relative">
                                                 <RobustImage src={extractImageUrl(sim)} title={sim.titulo || sim.title} type="poster" className="w-full h-full object-cover" />
                                                 {sim.rating && (
@@ -504,7 +422,7 @@
                             </div>
                         ) : (
                             <div className="space-y-10">
-                                {/* 🔥 REPARTO */}
+                                {/* REPARTO */}
                                 {item.reparto && item.reparto.length > 0 && (
                                     <div>
                                         <h3 className="text-2xl font-black text-white mb-5">Reparto</h3>
@@ -526,7 +444,7 @@
                                     </div>
                                 )}
 
-                                {/* 🔥 FICHA TÉCNICA */}
+                                {/* FICHA TÉCNICA */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                     {item.director && (
                                         <div>
@@ -552,41 +470,25 @@
                                             <p className="text-white text-base font-medium leading-relaxed">{item.productoras}</p>
                                         </div>
                                     )}
-                                    {item.idioma && (
-                                        <div>
-                                            <p className="text-xs uppercase text-slate-500 font-black tracking-widest mb-2">Idioma</p>
-                                            <p className="text-white text-base font-medium">{item.idioma}</p>
-                                        </div>
-                                    )}
-                                    {item.estreno && (
-                                        <div>
-                                            <p className="text-xs uppercase text-slate-500 font-black tracking-widest mb-2">Fecha de estreno</p>
-                                            <p className="text-white text-base font-medium">{item.estreno}</p>
-                                        </div>
-                                    )}
                                 </div>
 
-                                {/* 🔥 SINOPSIS COMPLETA */}
+                                {/* SINOPSIS */}
                                 <div>
                                     <h3 className="text-2xl font-black text-white mb-4">Sinopsis</h3>
                                     <p className="text-slate-200 text-lg leading-relaxed max-w-4xl">{desc}</p>
                                 </div>
 
-                                {/* 🔥 TRÁILER */}
+                                {/* TRÁILER */}
                                 {item.trailerUrl && (
                                     <div>
-                                        <Focusable
-                                            as="a"
-                                            focusKey="detail-trailer"
-                                            onEnter={() => window.open(item.trailerUrl, '_blank')}
-                                            className="inline-flex items-center gap-3 bg-rose-600 text-white px-8 py-4 rounded-lg font-black text-base shadow-lg"
-                                        >
+                                        <Focusable as="a" focusKey="detail-trailer" onEnter={() => window.open(item.trailerUrl, '_blank')}
+                                            className="inline-flex items-center gap-3 bg-rose-600 text-white px-8 py-4 rounded-lg font-black text-base shadow-lg">
                                             🎬 Ver Tráiler Oficial
                                         </Focusable>
                                     </div>
                                 )}
 
-                                {/* 🔥 EPISODIOS (solo series/animados) */}
+                                {/* EPISODIOS */}
                                 {isSerie && seasons.length > 0 && (
                                     <div className="glass-panel rounded-2xl p-8">
                                         <h3 className="font-black text-2xl text-white mb-6 flex items-center gap-3">
@@ -594,24 +496,17 @@
                                         </h3>
                                         <div className="flex gap-3 mb-6 overflow-x-auto pb-2 no-scrollbar">
                                             {seasons.map((season, sIdx) => (
-                                                <Focusable
-                                                    key={sIdx}
-                                                    focusKey={`season-${sIdx}`}
-                                                    onEnter={() => setExpandedSeason(sIdx)}
-                                                    className={`px-6 py-3 rounded-lg text-sm font-bold whitespace-nowrap ${expandedSeason === sIdx ? 'bg-cyan-600 text-white' : 'bg-white/5 text-slate-400 border-2 border-slate-800'}`}
-                                                >
+                                                <Focusable key={sIdx} focusKey={`season-${sIdx}`} onEnter={() => setExpandedSeason(sIdx)}
+                                                    className={`px-6 py-3 rounded-lg text-sm font-bold whitespace-nowrap ${expandedSeason === sIdx ? 'bg-cyan-600 text-white' : 'bg-white/5 text-slate-400 border-2 border-slate-800'}`}>
                                                     Temporada {season.seasonNumber}
                                                 </Focusable>
                                             ))}
                                         </div>
                                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                                             {seasons[expandedSeason]?.episodes?.map((ep, eIdx) => (
-                                                <Focusable
-                                                    key={ep.id || eIdx}
-                                                    focusKey={`ep-${expandedSeason}-${eIdx}`}
+                                                <Focusable key={ep.id || eIdx} focusKey={`ep-${expandedSeason}-${eIdx}`}
                                                     onEnter={() => onPlayEpisode(item, ep)}
-                                                    className="p-4 rounded-xl flex items-center gap-4 bg-white/5 border-2 border-slate-800/50"
-                                                >
+                                                    className="p-4 rounded-xl flex items-center gap-4 bg-white/5 border-2 border-slate-800/50">
                                                     <div className="w-10 h-10 rounded-full bg-cyan-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                                                         {eIdx + 1}
                                                     </div>
@@ -625,7 +520,7 @@
                             </div>
                         )}
 
-                        {/* 🔥 ÚLTIMOS 6 ESTRENOS — SIEMPRE AL FINAL */}
+                        {/* MÁS ESTRENOS 2026 */}
                         {ultimosEstrenos.length > 0 && (
                             <div className="pt-8 border-t border-slate-800/80">
                                 <div className="flex items-center gap-3 mb-6">
@@ -637,12 +532,8 @@
                                 </div>
                                 <div className="grid grid-cols-6 gap-5">
                                     {ultimosEstrenos.map((sim, sIdx) => (
-                                        <Focusable
-                                            key={sim.id || sIdx}
-                                            focusKey={`estreno-${sim.id || sIdx}`}
-                                            onEnter={() => onSelectSimilar(sim)}
-                                            className="cursor-pointer"
-                                        >
+                                        <Focusable key={sim.id || sIdx} focusKey={`estreno-${sim.id || sIdx}`}
+                                            onEnter={() => onSelectSimilar(sim)} className="cursor-pointer">
                                             <div className="aspect-[2/3] rounded-2xl overflow-hidden border-2 border-slate-800 relative">
                                                 <RobustImage src={extractImageUrl(sim)} title={sim.titulo || sim.title} type="poster" className="w-full h-full object-cover" />
                                                 {sim.rating && (
@@ -652,7 +543,6 @@
                                                 )}
                                             </div>
                                             <p className="text-sm font-bold text-white mt-2 line-clamp-2 text-center">{sim.titulo || sim.title}</p>
-                                            {sim.year && (<p className="text-xs text-slate-400 text-center">{sim.year}</p>)}
                                         </Focusable>
                                     ))}
                                 </div>
@@ -664,31 +554,21 @@
         };
 
         // ============================================================
-        // REPRODUCTOR FULLSCREEN
+        // REPRODUCTOR
         // ============================================================
         const PlayerScreen = ({ item, episode, onClose }) => {
-            const url = convertUrl(
-                episode ? episode.url : (item.url || item.urlDrive || item.rawUrl || '')
-            );
+            const url = convertUrl(episode ? episode.url : (item.url || item.urlDrive || item.rawUrl || ''));
             return (
                 <div className="fixed inset-0 z-[200] bg-black animate-fade-in">
                     <div className="absolute top-6 left-6 z-30">
-                        <Focusable
-                            as="button"
-                            focusKey="player-back"
-                            onEnter={onClose}
-                            className="bg-black/80 text-white px-6 py-3 rounded-full backdrop-blur-md flex items-center gap-2 text-sm font-bold border-2 border-cyan-500/40"
-                        >
+                        <Focusable as="button" focusKey="player-back" onEnter={onClose}
+                            className="bg-black/80 text-white px-6 py-3 rounded-full backdrop-blur-md flex items-center gap-2 text-sm font-bold border-2 border-cyan-500/40">
                             <Icon name="arrowLeft" size={16}/> Volver
                         </Focusable>
                     </div>
                     {url ? (
-                        <iframe
-                            src={url}
-                            className="w-full h-full border-0 absolute inset-0"
-                            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-                            allowFullScreen
-                        ></iframe>
+                        <iframe src={url} className="w-full h-full border-0 absolute inset-0"
+                            allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen></iframe>
                     ) : (
                         <div className="flex items-center justify-center h-full text-white">
                             <p className="text-xl">No hay URL de reproducción disponible</p>
@@ -719,7 +599,6 @@
                 { id: 'animados', icon: 'smile', label: 'Animados' },
             ];
 
-            // Botón ATRÁS
             useEffect(() => {
                 const handleBack = () => {
                     if (playingItem) { setPlayingItem(null); setPlayingEpisode(null); return; }
@@ -730,7 +609,6 @@
                 return () => window.removeEventListener('tv-back', handleBack);
             }, [playingItem, selectedItem, activeTab]);
 
-            // Carga de datos
             useEffect(() => {
                 const init = async () => {
                     try {
@@ -744,73 +622,45 @@
 
                         const parseMovies = (data, prefix, type) => {
                             if (!data) return [];
-                            const raw = Array.isArray(data) ? data : (data.peliculas || data.content || []);
-                            return raw.map((m, idx) => {
+                            const rawMovies = Array.isArray(data) ? data : (data.peliculas || data.content || []);
+                            return rawMovies.map((m, idx) => {
                                 const title = m.titulo || m.title || m.name || `${prefix} ${idx+1}`;
-                                const img = extractImageUrl(m);
+                                const imgUrl = extractImageUrl(m);
                                 return {
                                     ...m,
                                     id: `${type}-${idx}`,
                                     type,
                                     title,
                                     description: m.descripcion || m.sinopsis || m.plot || '',
-                                    image: img || generatePlaceholder(title, 'poster'),
-                                    backdrop: m.backdrop || m.banner || img,
+                                    image: imgUrl || generatePlaceholder(title, 'poster'),
+                                    backdrop: m.backdrop || m.banner || imgUrl,
                                     url: convertUrl(m.urlDrive || m.url || m.urlOkRu),
                                     rawUrl: m.urlDrive || m.url || m.urlOkRu,
-                                    // 🔥 Campos enriquecidos
-                                    year: m.year || m.año || '',
-                                    runtime: m.runtime || m.duracion || '',
-                                    clasificacion: m.clasificacion || m.rating_clasificacion || '',
-                                    rating: m.rating || m.puntuacion || '',
-                                    generosTexto: m.generosTexto || m.generos || m.genero || '',
-                                    director: m.director || '',
-                                    guionistas: m.guionistas || m.guion || '',
-                                    pais: m.pais || m.país || '',
-                                    productoras: m.productoras || m.productora || '',
-                                    idioma: m.idioma || '',
-                                    estreno: m.estreno || m.fechaEstreno || '',
-                                    trailerUrl: m.trailerUrl || m.trailer || '',
-                                    reparto: m.reparto || m.actores || [],
-                                    codigo: m.codigo || m.password || m.pin,
                                 };
                             });
                         };
 
                         const parseSeries = (data) => {
                             if (!data) return [];
-                            const raw = Array.isArray(data) ? data : (data.series || []);
-                            return raw.map((s, idx) => {
+                            const rawSeries = Array.isArray(data) ? data : (data.series || []);
+                            return rawSeries.map((s, idx) => {
                                 const title = s.tituloSerie || s.titulo || s.title || s.name || `Serie ${idx+1}`;
-                                const img = extractImageUrl(s);
+                                const imgUrl = extractImageUrl(s);
                                 return {
                                     ...s,
                                     id: `serie-${idx}`,
                                     type: 'series',
                                     title,
                                     description: s.descripcion || s.sinopsis || '',
-                                    image: img || generatePlaceholder(title, 'poster'),
-                                    backdrop: s.backdrop || s.banner || img,
-                                    year: s.year || s.año || '',
-                                    runtime: s.runtime || s.duracion || '',
-                                    clasificacion: s.clasificacion || '',
-                                    rating: s.rating || s.puntuacion || '',
-                                    generosTexto: s.generosTexto || s.generos || s.genero || '',
-                                    director: s.director || '',
-                                    guionistas: s.guionistas || s.guion || '',
-                                    pais: s.pais || s.país || '',
-                                    productoras: s.productoras || s.productora || '',
-                                    idioma: s.idioma || '',
-                                    estreno: s.estreno || s.fechaEstreno || '',
-                                    trailerUrl: s.trailerUrl || s.trailer || '',
-                                    reparto: s.reparto || s.actores || [],
-                                    codigo: s.codigo || s.password || s.pin,
+                                    image: imgUrl || generatePlaceholder(title, 'poster'),
+                                    backdrop: s.backdrop || s.banner || imgUrl,
                                     seasons: (s.temporadas || []).map((t, tIdx) => ({
                                         seasonNumber: t.numeroTemporada || (tIdx+1),
                                         episodes: (t.episodios || []).map((ep, eIdx) => ({
                                             id: `ep-${idx}-${tIdx}-${eIdx}`,
                                             title: ep.tituloEpisodio || ep.titulo || `Episodio ${eIdx+1}`,
                                             url: convertUrl(ep.urlDrive || ep.url),
+                                            rawUrl: ep.urlDrive || ep.url,
                                         }))
                                     }))
                                 };
@@ -819,39 +669,27 @@
 
                         const parseAnimados = (data) => {
                             if (!data) return [];
-                            const raw = Array.isArray(data) ? data : (data.animados || []);
-                            return raw.map((a, idx) => {
+                            const rawAnimados = Array.isArray(data) ? data : (data.animados || []);
+                            return rawAnimados.map((a, idx) => {
                                 const title = a.titulo || a.tituloSerie || a.title || a.name || `Animado ${idx+1}`;
-                                const img = extractImageUrl(a);
+                                const imgUrl = extractImageUrl(a);
                                 return {
                                     ...a,
                                     id: `anim-${idx}`,
                                     type: 'animados',
                                     title,
                                     description: a.descripcion || a.sinopsis || '',
-                                    image: img || generatePlaceholder(title, 'poster'),
-                                    backdrop: a.backdrop || a.banner || img,
+                                    image: imgUrl || generatePlaceholder(title, 'poster'),
+                                    backdrop: a.backdrop || a.banner || imgUrl,
                                     url: convertUrl(a.urlDrive || a.url),
-                                    year: a.year || a.año || '',
-                                    runtime: a.runtime || a.duracion || '',
-                                    clasificacion: a.clasificacion || '',
-                                    rating: a.rating || a.puntuacion || '',
-                                    generosTexto: a.generosTexto || a.generos || a.genero || '',
-                                    director: a.director || '',
-                                    guionistas: a.guionistas || a.guion || '',
-                                    pais: a.pais || a.país || '',
-                                    productoras: a.productoras || a.productora || '',
-                                    idioma: a.idioma || '',
-                                    estreno: a.estreno || a.fechaEstreno || '',
-                                    trailerUrl: a.trailerUrl || a.trailer || '',
-                                    reparto: a.reparto || a.actores || [],
-                                    codigo: a.codigo || a.password || a.pin,
+                                    rawUrl: a.urlDrive || a.url,
                                     seasons: (a.temporadas || []).map((t, tIdx) => ({
                                         seasonNumber: t.numeroTemporada || (tIdx+1),
                                         episodes: (t.episodios || []).map((ep, eIdx) => ({
                                             id: `ep-anim-${idx}-${tIdx}-${eIdx}`,
                                             title: ep.tituloEpisodio || ep.titulo || `Episodio ${eIdx+1}`,
                                             url: convertUrl(ep.urlDrive || ep.url),
+                                            rawUrl: ep.urlDrive || ep.url,
                                         }))
                                     }))
                                 };
@@ -923,7 +761,6 @@
             return (
                 <NavContext.Provider value={nav}>
                     <div className="w-screen h-screen bg-[#020617] text-white flex flex-col overflow-hidden">
-
                         <header className="flex-shrink-0 glass-header px-10 py-5 flex items-center justify-between">
                             <div className="flex items-center gap-10">
                                 <Focusable focusKey="logo" onEnter={() => setActiveTab('home')} className="flex items-center gap-3">
@@ -932,38 +769,23 @@
                                     </div>
                                     <span className="font-black text-2xl tracking-tight">BOXPLAY<span className="text-cyan-400">TV</span></span>
                                 </Focusable>
-
                                 <nav className="flex items-center gap-2">
                                     {navTabs.map(tab => (
-                                        <Focusable
-                                            key={tab.id}
-                                            as="button"
-                                            focusKey={`nav-${tab.id}`}
-                                            onEnter={() => setActiveTab(tab.id)}
-                                            className={`px-5 py-3 rounded-xl text-base font-bold flex items-center gap-2 transition-colors ${
-                                                activeTab === tab.id
-                                                    ? 'bg-cyan-500/25 text-cyan-300 border-2 border-cyan-500/60'
-                                                    : 'text-slate-300 bg-white/5 border-2 border-transparent'
-                                            }`}
-                                        >
+                                        <Focusable key={tab.id} as="button" focusKey={`nav-${tab.id}`} onEnter={() => setActiveTab(tab.id)}
+                                            className={`px-5 py-3 rounded-xl text-base font-bold flex items-center gap-2 ${
+                                                activeTab === tab.id ? 'bg-cyan-500/25 text-cyan-300 border-2 border-cyan-500/60' : 'text-slate-300 bg-white/5 border-2 border-transparent'
+                                            }`}>
                                             <Icon name={tab.icon} size={18}/>
                                             <span>{tab.label}</span>
                                         </Focusable>
                                     ))}
                                 </nav>
                             </div>
-
-                            <div className="flex items-center gap-4">
-                                <Focusable
-                                    as="button"
-                                    focusKey="favorites-btn"
-                                    onEnter={() => setActiveTab('home')}
-                                    className="px-4 py-2.5 rounded-xl bg-cyan-500/15 text-cyan-300 border-2 border-cyan-500/30 text-sm font-bold flex items-center gap-2"
-                                >
-                                    <Icon name="heart" size={16} fill={favorites.length > 0 ? '#06b6d4' : 'none'}/>
-                                    <span>Favs ({favorites.length})</span>
-                                </Focusable>
-                            </div>
+                            <Focusable as="button" focusKey="favorites-btn" onEnter={() => setActiveTab('home')}
+                                className="px-4 py-2.5 rounded-xl bg-cyan-500/15 text-cyan-300 border-2 border-cyan-500/30 text-sm font-bold flex items-center gap-2">
+                                <Icon name="heart" size={16} fill={favorites.length > 0 ? '#06b6d4' : 'none'}/>
+                                <span>Favs ({favorites.length})</span>
+                            </Focusable>
                         </header>
 
                         <main className="flex-1 overflow-y-auto no-scrollbar px-10 py-8 space-y-12">
@@ -981,13 +803,10 @@
                                         </div>
                                         <div className="grid grid-cols-6 gap-5">
                                             {section.items.map((item, i) => (
-                                                <Card
-                                                    key={item.id || i}
-                                                    item={item}
+                                                <Card key={item.id || i} item={item}
                                                     focusKey={`card-${activeTab}-${sIdx}-${item.id || i}`}
                                                     onClick={handleSelect}
-                                                    isFavorite={isItemFavorite(item)}
-                                                />
+                                                    isFavorite={isItemFavorite(item)} />
                                             ))}
                                         </div>
                                     </div>
