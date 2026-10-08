@@ -16,8 +16,8 @@
    ===================================================================== */
 var ORIGINAL = 'index.html';
 /* Si no está junto a tv.html (o abres esto en una vista previa), se descarga de tu repositorio */
-var FALLBACK = 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/main/index.html';
-var FALLBACK_BASE = 'https://sejo48.github.io/StreamTube-V20/';
+var FALLBACK = 'https://raw.githubusercontent.com/sejo48/boxesmat/main/index.html';
+var FALLBACK_BASE = 'https://sejo48.github.io/boxesmat/';
 
 /* ---------- Navegación con control remoto (se inyecta dentro de la app) ---------- */
 function engine() {
@@ -180,7 +180,9 @@ function engine() {
   function get(url, ok, fail) {
     var x = new XMLHttpRequest();
     x.open('GET', url + '?t=' + new Date().getTime(), true);
+    x.timeout = 20000;
     x.onerror = fail;
+    x.ontimeout = fail;
     x.onload = function () {
       var t = x.responseText || '';
       if (x.status >= 200 && x.status < 300 && /<html|<!doctype/i.test(t) && t.indexOf('text/babel') > -1) ok(t); else fail();
