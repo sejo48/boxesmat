@@ -198,13 +198,13 @@ test('TV layout fits 1280x720 and optional desktop mode starts', async () => {
 test('compact TV layout at the 960x540 viewport used by TV browsers', async () => {
   const p = await page(960, 540); await enter(p);
   const navFont = await p.locator('nav button').first().evaluate(el => parseFloat(getComputedStyle(el).fontSize));
-  assert.ok(navFont <= 13, `navigation font ${navFont}`);
+  assert.ok(navFont <= 10, `navigation font ${navFont}`);
   const header = await p.locator('header').boundingBox();
-  assert.ok(header.height <= 125, `header height ${header.height}`);
+  assert.ok(header.height <= 95, `header height ${header.height}`);
   const grid = p.locator('.tv-poster-grid').first();
-  assert.equal(await grid.evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length), 6);
+  assert.equal(await grid.evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length), 8);
   const card = await grid.locator('.card-glow').first().boundingBox();
-  assert.ok(card.width < 160, `card width ${card.width}`);
+  assert.ok(card.width < 120, `card width ${card.width}`);
   assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await focus(p, p.locator('nav button').first()); await p.keyboard.press('ArrowRight');
   assert.match(await p.locator('[data-tv-focus]').innerText(), /Películas/);

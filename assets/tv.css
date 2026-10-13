@@ -1,10 +1,10 @@
 /* TV-first layout, safe screen edges and focus at viewing distance. */
-html.tv-mode { font-size: clamp(12px, 1vw, 18px); scroll-padding: 11rem 3vw 4rem; }
+html.tv-mode { font-size: clamp(9px, .8vw, 14px); scroll-padding: 11rem 3vw 4rem; }
 .tv-mode body { margin: 0; }
-.tv-mode header { padding: .65rem 2.5vw; flex-wrap: wrap; gap: .45rem; }
+.tv-mode header { padding: .4rem 2vw; flex-wrap: wrap; gap: .3rem; }
 .tv-mode header > div:first-child { width: 100%; flex-wrap: nowrap; gap: 1rem; }
 .tv-mode .tv-navigation { display: flex !important; flex: 1; min-width: 0; width: auto; gap: .35rem; overflow-x: auto; padding: .4rem; scrollbar-width: none; }
-.tv-mode .tv-navigation button { flex-shrink: 0; min-height: 2rem; padding: .45rem .7rem; font-size: 1rem; }
+.tv-mode .tv-navigation button { flex-shrink: 0; min-height: 1.8rem; padding: .35rem .55rem; font-size: 1rem; }
 .tv-mode header > div:last-child { margin-left: auto; }
 .tv-mode header input { min-width: 12rem; }
 .tv-mode header > div:last-child > div { display: block !important; width: auto; }
@@ -48,7 +48,7 @@ html.tv-mode { font-size: clamp(12px, 1vw, 18px); scroll-padding: 11rem 3vw 4rem
 .tv-mode header > div:last-child { gap: .5rem; }
 .tv-mode header > div:last-child > button { padding: .45rem .65rem; font-size: .9rem; }
 .tv-mode header input { padding-top: .45rem; padding-bottom: .45rem; }
-.tv-mode .tv-poster-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .8rem; }
-@media (min-width: 640px) { .tv-mode .tv-poster-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
-@media (min-width: 900px) { .tv-mode .tv-poster-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
-@media (min-width: 1600px) { .tv-mode .tv-poster-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
+.tv-mode .tv-poster-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .65rem; }
+@media (min-width: 640px) { .tv-mode .tv-poster-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (min-width: 900px) { .tv-mode .tv-poster-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
+@media (min-width: 1600px) { .tv-mode .tv-poster-grid { grid-template-columns: repeat(10, minmax(0, 1fr)); } }
