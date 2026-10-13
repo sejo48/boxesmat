@@ -52,3 +52,7 @@ html.tv-mode { font-size: clamp(9px, .8vw, 14px); scroll-padding: 11rem 3vw 4rem
 @media (min-width: 640px) { .tv-mode .tv-poster-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 @media (min-width: 900px) { .tv-mode .tv-poster-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
 @media (min-width: 1600px) { .tv-mode .tv-poster-grid { grid-template-columns: repeat(10, minmax(0, 1fr)); } }
+
+.tv-movie-stage { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 200; }
+[data-playing="true"] header, [data-playing="true"] .tv-remote-hint { visibility: hidden; }
+[data-playing="true"] .animate-fade-in { animation: none; transform: none; }

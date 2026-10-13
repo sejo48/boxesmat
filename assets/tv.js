@@ -14,7 +14,7 @@
     if (keyboard) return keyboard;
     var dialogs = Array.prototype.filter.call(document.querySelectorAll('[data-tv-dialog]'), visible);
     dialogs.sort(function (a, b) { return (parseInt(getComputedStyle(b).zIndex, 10) || 0) - (parseInt(getComputedStyle(a).zIndex, 10) || 0); });
-    return dialogs[0] || document.fullscreenElement || document.webkitFullscreenElement || document;
+    return dialogs[0] || document.fullscreenElement || document.webkitFullscreenElement || document.querySelector('.tv-movie-stage') || document;
   }
   function candidates() { return Array.prototype.filter.call(scope().querySelectorAll(selector), visible); }
   function focus(el) {

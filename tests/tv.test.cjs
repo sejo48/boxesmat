@@ -4,22 +4,28 @@ const { chromium } = require('playwright-core');
 const { spawn } = require('node:child_process');
 const path = require('node:path');
 let browser, server;
-const base = 'http://127.0.0.1:8123';
+let base;
 before(async () => {
-  server = spawn('python3', ['-m', 'http.server', '8123', '--bind', '127.0.0.1'], { cwd: path.resolve(__dirname, '..'), stdio: 'ignore' });
+  const probe = require('node:net').createServer();
+  await new Promise(resolve => probe.listen(0, '127.0.0.1', resolve));
+  const port = probe.address().port;
+  await new Promise(resolve => probe.close(resolve));
+  base = 'http://127.0.0.1:' + port;
+  server = spawn('python3', ['-m', 'http.server', String(port), '--bind', '127.0.0.1'], { cwd: path.resolve(__dirname, '..'), stdio: 'ignore' });
   for (let i = 0; i < 50; i++) { try { const r = await fetch(base); if (r.ok) break; } catch {} await new Promise(r => setTimeout(r, 100)); }
   browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'] });
 });
 after(async () => { if (browser) await browser.close(); if (server) server.kill(); });
-async function page(width = 1920, height = 1080) {
+async function page(width = 1920, height = 1080, subscribed = false) {
   const context = await browser.newContext({ viewport: { width, height } });
+  context.requested = [];
+  if (subscribed) await context.addInitScript(() => localStorage.setItem('boxplay_user_email', 'test@example.invalid'));
   await context.route('**/*', async route => {
     const url = new URL(route.request().url());
+    context.requested.push(url.pathname);
     const file = url.pathname.split('/').pop();
-    if (file === 'listaoficial.m3u') return route.fulfill({ contentType: 'text/plain', body: '#EXTM3U\n#EXTINF:-1 tvg-logo="" group-title="Pruebas",Canal de prueba\n' + base + '/tests/fixtures/remote-test.webm\n#EXTINF:-1 group-title="Otros",Segundo canal\n' + base + '/tests/fixtures/remote-test.webm\n' });
     if (['peliculas.json','peliculas2.json'].includes(file)) return route.fulfill({ json: [{ titulo: 'Película de prueba', url: base + '/tests/fixtures/remote-test.webm', descripcion: 'Contenido para comprobar el mando.' }] });
     if (['playlist.json','animados.json','tudum.json'].includes(file)) return route.fulfill({ json: [] });
-    if (file === 'radios.json') return route.fulfill({ json: [{ id: 'test-radio', title: 'Radio de prueba', url: base + '/tests/fixtures/remote-test.wav' }] });
     if (url.origin === base && file === 'remote-test.webm') {
       const bytes = require('node:fs').readFileSync(path.join(__dirname, 'fixtures', file));
       const range = route.request().headers().range;
@@ -32,7 +38,7 @@ async function page(width = 1920, height = 1080) {
     }
     if (url.origin === base) return route.continue();
     if (file === 'firebase-app.js') return route.fulfill({ contentType: 'application/javascript', body: 'export function initializeApp(){return {}}' });
-    if (file === 'firebase-firestore.js') return route.fulfill({ contentType: 'application/javascript', body: 'export function getFirestore(){return {}}; export function doc(){return {}}; export async function getDoc(){return {exists:()=>false}}; export async function updateDoc(){}; export async function setDoc(){}' });
+    if (file === 'firebase-firestore.js') return route.fulfill({ contentType: 'application/javascript', body: `export function getFirestore(){return {}}; export function doc(){return {}}; export async function getDoc(){return {exists:()=>${subscribed}, data:()=>({status:'active', expires_at:'2999-01-01', devices:[]})}}; export async function updateDoc(){}; export async function setDoc(){}` });
     return route.abort();
   });
   const p = await context.newPage();
@@ -51,7 +57,7 @@ async function pressRemote(p, keyCode) { await p.evaluate(code => document.dispa
 
 test('TV startup, remote OK and all navigation sections without JavaScript errors', async () => {
   const p = await page(); await enter(p);
-  assert.equal(await p.locator('nav[aria-label="Secciones"] button').count(), 11);
+  assert.equal(await p.locator('nav[aria-label="Secciones"] button').count(), 9);
   assert.deepEqual(p.errors, []);
   await focus(p, p.locator('nav button').first());
   await p.keyboard.press('ArrowRight');
@@ -112,9 +118,13 @@ test('card favorites are individually reachable and persist after reload', async
   await p.context().close();
 });
 
-test('TV direct video responds to media keys, toolbar, category selection and fullscreen Back', async () => {
-  const p = await page(); await enter(p);
-  await focus(p, p.locator('nav button').filter({ hasText: /^TV$/ })); await p.keyboard.press('Enter');
+test('Ver ahora opens the movie in fullscreen and keeps media controls working', async () => {
+  const p = await page(1920, 1080, true); await enter(p);
+  const card = p.locator('.card-glow').filter({ hasText: 'Película de prueba' }).first();
+  await focus(p, card); await p.keyboard.press('Enter');
+  const play = p.locator('main button').filter({ hasText: /Ver ahora/i }).first();
+  await focus(p, play); await p.keyboard.press('Enter');
+  await p.waitForFunction(() => !!document.fullscreenElement);
   await p.waitForSelector('video');
   await p.waitForFunction(() => document.querySelector('video').readyState >= 2);
   await pressRemote(p, 19); assert.equal(await p.locator('video').evaluate(v => v.paused), true);
@@ -128,13 +138,10 @@ test('TV direct video responds to media keys, toolbar, category selection and fu
   assert.equal(await p.locator('video').evaluate(v => v.muted), true);
   await focus(p, p.getByRole('button', { name: 'Subir volumen', exact: true })); await p.keyboard.press('Enter');
   assert.equal(await p.locator('video').evaluate(v => v.volume), 1);
-  await focus(p, p.getByRole('button', { name: 'Pantalla completa', exact: true })); await p.keyboard.press('Enter');
-  await p.waitForFunction(() => !!document.fullscreenElement); await pressRemote(p, 10009);
+  assert.equal(await p.evaluate(() => !!document.fullscreenElement), true);
+  await pressRemote(p, 10009);
   await p.waitForFunction(() => !document.fullscreenElement);
   assert.equal(await p.locator('video').count(), 1);
-  const select = p.locator('main select'); await focus(p, select); await p.keyboard.press('Enter'); await p.keyboard.press('ArrowDown');
-  assert.equal(await select.inputValue(), 'Pruebas');
-  await pressRemote(p, 10009); assert.equal(await p.locator('video').count(), 1);
   await pressRemote(p, 10009); await p.waitForFunction(() => !document.querySelector('video'));
   assert.deepEqual(p.errors, []);
   await p.context().close();
@@ -165,21 +172,13 @@ test('subscription remains required; remote opens a masked PIN keyboard', async 
   await p.context().close();
 });
 
-test('radio media keys and range changes update React controls', async () => {
+test('television and radio are removed from navigation, home, favorites and catalog requests', async () => {
   const p = await page(); await enter(p);
-  await focus(p, p.locator('nav button').filter({ hasText: /^Radio HD$/ })); await p.keyboard.press('Enter');
-  await p.getByPlaceholder('Buscar emisora...').waitFor();
-  await pressRemote(p, 19);
-  assert.equal(await p.locator('main button').filter({ hasText: /^REPRODUCIR$/ }).count(), 1);
-  await pressRemote(p, 415);
-  await p.locator('main button').filter({ hasText: /^PAUSAR$/ }).waitFor();
-  const volume = p.locator('main input[type="range"]');
-  await focus(p, volume); await p.keyboard.press('ArrowLeft');
-  assert.ok(Math.abs(Number(await volume.inputValue()) - 0.75) < 0.001);
-  await p.waitForTimeout(120); // A rerender must retain the changed React value.
-  assert.ok(Math.abs(Number(await volume.inputValue()) - 0.75) < 0.001);
-  await pressRemote(p, 413);
-  assert.equal(await p.locator('main button').filter({ hasText: /^REPRODUCIR$/ }).count(), 1);
+  assert.equal(await p.locator('nav button').filter({ hasText: /^(TV|Radio HD)$/ }).count(), 0);
+  assert.doesNotMatch(await p.locator('main').innerText(), /Televisión en Vivo|Emisoras de Radio|canales disponibles/);
+  await focus(p, p.locator('nav button').filter({ hasText: /^Favs$/ })); await p.keyboard.press('Enter');
+  assert.doesNotMatch(await p.locator('main').innerText(), /Canales de TV|Emisoras de Radio/);
+  assert.equal(p.context().requested.some(url => /listaoficial|radios\.json/.test(url)), false);
   assert.deepEqual(p.errors, []);
   await p.context().close();
 });
@@ -208,5 +207,22 @@ test('compact TV layout at the 960x540 viewport used by TV browsers', async () =
   assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await focus(p, p.locator('nav button').first()); await p.keyboard.press('ArrowRight');
   assert.match(await p.locator('[data-tv-focus]').innerText(), /Películas/);
+  await p.context().close();
+});
+
+test('movie fills the viewport when native fullscreen is unavailable', async () => {
+  const p = await page(960, 540, true); await enter(p);
+  await p.evaluate(() => { Element.prototype.requestFullscreen = () => Promise.reject(new Error('Not available')); });
+  const card = p.locator('.card-glow').filter({ hasText: 'Película de prueba' }).first();
+  await focus(p, card); await p.keyboard.press('Enter');
+  await focus(p, p.locator('main button').filter({ hasText: /Ver ahora/i }).first()); await p.keyboard.press('Enter');
+  await p.waitForSelector('video');
+  const bounds = await p.locator('.tv-movie-stage').boundingBox();
+  assert.deepEqual({ x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, { x: 0, y: 0, width: 960, height: 540 });
+  assert.equal(await p.locator('header').evaluate(el => getComputedStyle(el).visibility), 'hidden');
+  assert.equal(await p.evaluate(() => !!document.fullscreenElement), false);
+  await pressRemote(p, 10009); await p.waitForFunction(() => !document.querySelector('video'));
+  assert.equal(await p.locator('header').evaluate(el => getComputedStyle(el).visibility), 'visible');
+  assert.deepEqual(p.errors, []);
   await p.context().close();
 });

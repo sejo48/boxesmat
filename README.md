@@ -11,7 +11,7 @@ Publica **index.html y la carpeta assets completa** en el mismo servidor HTTPS. 
 - Atrás: cancelar el teclado, cerrar ventanas, salir de pantalla completa, volver del reproductor a los detalles o regresar a Inicio. En Inicio permanece en la aplicación.
 - Buscar / correo / PIN: teclado en pantalla, mayúsculas, espacio, borrar, cancelar y confirmar. El PIN permanece enmascarado y respeta la longitud máxima.
 - Categorías: OK para entrar en la selección, flechas para cambiar y OK o Atrás para terminar.
-- Radio: las teclas de reproducir, pausar, detener y siguiente/anterior controlan las emisoras.
+- «Ver ahora» abre el reproductor a pantalla completa, después de validar suscripción y PIN. Si el navegador rechaza la pantalla completa nativa, el reproductor ocupa toda la ventana.
 - Video directo: reproducir/pausar, saltos de diez segundos cuando la fuente permite búsqueda, volumen, silencio, subtítulos incluidos en el video y pantalla completa. Las flechas izquierda/derecha también ajustan los deslizadores.
 
 El foco luminoso permanece dentro de las ventanas y vuelve al control que las abrió. Las tarjetas y sus botones de favorito pueden seleccionarse por separado. El diseño incluye márgenes de seguridad, textos grandes y soporte de movimiento reducido.
@@ -43,6 +43,8 @@ npm start
 npm test
 ```
 
-Las pruebas arrancan su propio servidor en el puerto 8123 y usan Chromium mediante Playwright. `CHROMIUM_PATH` permite indicar otra ruta. Los catálogos y Firebase se sustituyen por datos de prueba; no se realizan pagos ni escrituras externas. El video de prueba es sintético, generado con FFmpeg.
+Las pruebas arrancan su propio servidor en un puerto local disponible y usan Chromium mediante Playwright. `CHROMIUM_PATH` permite indicar otra ruta. Los catálogos y Firebase se sustituyen por datos de prueba; no se realizan pagos ni escrituras externas. El video de prueba es sintético, generado con FFmpeg.
 
 Dependencias distribuidas: React/ReactDOM 18.2.0 (MIT), Babel standalone 7.23.5 (MIT, solo compilación), HLS.js 1.5.8 (Apache-2.0). Sus avisos se conservan en los archivos de `assets/vendor`.
+
+Esta edición contiene películas, series y animados. Se eliminaron televisión en vivo, radio, sus favoritos y sus solicitudes de catálogo. Los datos antiguos de favoritos de TV/radio no se muestran.
