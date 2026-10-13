@@ -1,0 +1,45 @@
+/* TV-first layout, safe screen edges and focus at viewing distance. */
+html.tv-mode { font-size: clamp(17px, 1.25vw, 26px); scroll-padding: 11rem 3vw 4rem; }
+.tv-mode body { margin: 0; }
+.tv-mode header { padding: 1.1rem 3vw; flex-wrap: wrap; gap: 1rem; }
+.tv-mode header > div:first-child { width: 100%; flex-wrap: nowrap; }
+.tv-mode .tv-navigation { display: flex !important; flex: 1; min-width: 0; width: auto; gap: .7rem; overflow-x: auto; padding: .5rem; scrollbar-width: none; }
+.tv-mode .tv-navigation button { flex-shrink: 0; min-height: 2.7rem; font-size: .9rem; }
+.tv-mode header > div:last-child { margin-left: auto; }
+.tv-mode header input { min-width: 15rem; }
+.tv-mode header > div:last-child > div { display: block !important; width: auto; }
+.tv-mode main { padding-top: calc(var(--tv-header-height, 10rem) + 2rem) !important; padding-left: 3vw !important; padding-right: 3vw !important; padding-bottom: 4rem !important; }
+.tv-mode .lg\:hidden.fixed.bottom-0 { display: none !important; }
+.tv-mode button, .tv-mode input, .tv-mode select, .tv-mode [role="button"] { scroll-margin: 13rem 2rem 3rem; }
+.tv-mode button, .tv-mode input, .tv-mode select { min-height: 2.6rem; }
+.tv-mode [data-tv-focus], .tv-mode button:focus-visible, .tv-mode [tabindex]:focus-visible, .tv-mode input:focus-visible, .tv-mode select:focus-visible {
+  outline: .2rem solid #67e8f9 !important; outline-offset: .18rem !important; box-shadow: 0 0 0 .35rem #020617, 0 0 1.4rem #06b6d4 !important; z-index: 2;
+}
+.tv-mode [data-tv-focus].card-glow { transform: translateY(-.15rem); }
+.tv-mode [data-tv-dialog] > div { max-height: 86vh; overflow-y: auto; }
+.tv-mode [data-tv-dialog] { padding: 4vh 4vw; }
+.tv-mode .text-\[9px\], .tv-mode .text-\[10px\], .tv-mode .text-\[11px\], .tv-mode .text-xs { font-size: .8rem; line-height: 1.5; }
+.tv-mode .text-sm { font-size: .95rem; }
+.tv-mode .card-glow button { min-width: 2.6rem; }
+.tv-toast { position: fixed; z-index: 10001; bottom: 5vh; left: 50%; transform: translateX(-50%); padding: .8rem 1.5rem; background: #0f172a; border: 2px solid #22d3ee; border-radius: 1rem; color: white; font-size: 1rem; }
+.tv-keyboard { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; background: rgba(2,6,23,.97); padding: 4vh 4vw; }
+.tv-keyboard-panel { width: min(60rem, 95vw); max-height: 90vh; overflow-y: auto; background: #0f172a; padding: 1.5rem; border: 2px solid #22d3ee; border-radius: 1.2rem; }
+.tv-keyboard h2 { font-size: 1.25rem; margin-bottom: .7rem; }
+.tv-keyboard-value { min-height: 3rem; margin-bottom: 1rem; padding: .6rem 1rem; background: #020617; border-radius: .5rem; word-break: break-all; }
+.tv-keyboard-row { display: flex; justify-content: center; gap: .6rem; padding: .4rem; }
+.tv-keyboard-row button { min-width: 3.5rem; min-height: 3rem; background: #1e293b; color: white; border: 1px solid #475569; border-radius: .5rem; font-size: 1.15rem; }
+.tv-keyboard-actions button { flex: 1; font-size: 1rem; }
+.tv-keyboard-actions button:last-child { background: #0e7490; }
+.tv-keyboard p { text-align: center; margin-top: 1rem; color: #cbd5e1; }
+@media (max-width: 1100px) { .tv-mode main { padding-top: calc(var(--tv-header-height, 12rem) + 2rem) !important; } .tv-mode header > div:last-child { flex-wrap: wrap; } .tv-keyboard-row { gap: .3rem; } .tv-keyboard-row button { min-width: 2.5rem; } }
+@media (prefers-reduced-motion: reduce) { .tv-mode *, .tv-mode *::before, .tv-mode *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+.tv-remote-hint { display: none; }
+.tv-mode .tv-remote-hint { display: block; position: fixed; bottom: 0; left: 0; right: 0; background: rgba(2,6,23,.94); border-top: 1px solid #334155; text-align: center; padding: .5rem 3vw; font-size: .75rem; z-index: 60; pointer-events: none; }
+.tv-player-controls { display: none; }
+.tv-mode .tv-player-controls { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; position: absolute; bottom: 1rem; left: 2%; right: 2%; padding: .75rem; z-index: 40; background: rgba(2,6,23,.94); border-radius: .75rem; }
+.tv-player-controls button { padding: .6rem .8rem; background: #164e63; color: white; border: 1px solid #22d3ee; border-radius: .5rem; font-size: .85rem; }
+.tv-mode video { object-fit: contain !important; }
+.tv-external-hint { position: absolute; bottom: .5rem; left: 5%; right: 5%; padding: .5rem; z-index: 30; background: rgba(2,6,23,.9); font-size: .75rem; text-align: center; pointer-events: none; }
+
+.tv-mode header > div:first-child > div { flex-shrink: 0; }
+.tv-mode [data-tv-dialog] input { font-size: 1rem !important; }

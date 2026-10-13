@@ -1,0 +1,14 @@
+{
+  "name": "boxesmat-smart-tv",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "start": "python3 -m http.server 8000 --bind 127.0.0.1",
+    "test": "node --test tests/tv.test.cjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.58.2",
+    "tailwindcss": "3.4.17"
+  }
+}
